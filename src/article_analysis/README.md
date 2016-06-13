@@ -18,6 +18,11 @@ TODO(?): Fill it.
 
 ### Basic Structure
 
+We split the program into modules:
+
+* `logger` - Handles log message of the whole program.
+* `utils` - Contains some utility function and tools.
+
 TODO(?): Fill it.
 
 
