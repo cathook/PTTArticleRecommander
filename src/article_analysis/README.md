@@ -18,13 +18,6 @@ TODO(?): Fill it.
 
 ### Basic Structure
 
-
-### About the directory `dummy`
-
-This module is used to prevent the link error because currently nothing
-will be compiled and the link command will throw error. After someone 
-finished the first non-inline module, it should be removed.
-
 TODO(?): Fill it.
 
 
