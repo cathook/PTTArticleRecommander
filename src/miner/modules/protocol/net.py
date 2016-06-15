@@ -1,8 +1,8 @@
 import struct
 
 
+# Enumerates of the type of the package.
 class PackageType(object):
-    '''Enumerates of the type of the package.'''
     ASYNC_BIT = 0x100000
     REPLY_QUERY_BIT = 0x01
 
