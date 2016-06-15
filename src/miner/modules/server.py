@@ -44,9 +44,8 @@ class _Delegator(object):
             typee: Type of the package content.
             args_buf: Byte-array form arguments.
 
-        Returns:
-            A (type, package content) touple for the reply message.
-            `None` if there is no-reply message.
+        Returns: A (type, package content) touple for the reply message.
+                `None` if there is no-reply message.
         '''
         if typee not in self._handlers:
             raise _ProtocolError('Unsupported query type')
@@ -61,8 +60,7 @@ class _Delegator(object):
             args_buf: byte-array arguments.
             structs: A list of struct to unpack the argument.
 
-        Returns:
-            A list of arguments.
+        Returns: A list of arguments.
         '''
         offs = 0
         args = []

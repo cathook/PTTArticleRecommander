@@ -9,7 +9,6 @@ class BackendInterface(object):
     It simply defines what methods should be implemented in the real backend
     server.
     '''
-
     def get_max_id(self, board):
         '''Gets the maximum id of a board.
 
