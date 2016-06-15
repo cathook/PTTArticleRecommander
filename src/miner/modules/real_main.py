@@ -21,7 +21,7 @@ class BBSCrawler(object):
     @since: 2014/8/2, v0.2
     '''
 
-    def __init__(self, board_name = 'car', myPageNum = 10, toNum = 0,debugFlag = False, forAll = False, fetch_path='./'):
+    def __init__(self, board_name = 'car', myPageNum = 10, fetch_path = './', toNum = 0,debugFlag = False, forAll = False):
         '''
         Constructor
         '''
@@ -40,8 +40,6 @@ class BBSCrawler(object):
         ## if forAll is on, iterate the total number of pages for the board by getAllPagesInTheBoard()    
         self.forAll = forAll
         self.toNum = toNum
-        print(toNum)
-        print("eqqe")
         self.fetch_path = fetch_path
         self.path = os.path.join(self.fetch_path, self.board_name)
         self.ESPECIAL_URL = 'http://www.ptt.cc/bbs/' + self.board_name + '/index' + '.html'
@@ -210,7 +208,7 @@ class BBSCrawler(object):
                     contentFile_fp.write(self.remove_html_tags(str(post.find(id='main-container'))))
                     contentFile_fp.close()
                 
-                os.chdir(self.path)
+                os.chdir(self.fetch_path)
                 ## delay for a little while in fear of getting blocked
                 time.sleep(0.1)
 
