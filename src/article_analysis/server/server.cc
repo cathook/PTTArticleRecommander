@@ -111,8 +111,12 @@ void Server::InitSocket_() {
   memset(reinterpret_cast<void*>(&addr), 0, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_port = htons(bind_port_);
-  addr.sin_addr.s_addr = inet_addr(bind_address_.c_str());
-  addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  struct hostent* he = gethostbyname(bind_address_.c_str());
+  if (he == NULL) {
+    logger_->Fatal("Cannot get host by name.");
+  }
+  memcpy(reinterpret_cast<void*>(&addr.sin_addr),
+         reinterpret_cast<void*>(he->h_addr_list[0]), he->h_length);
   int ret = bind(
       sock_fd_, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr));
   if (ret != 0) {
