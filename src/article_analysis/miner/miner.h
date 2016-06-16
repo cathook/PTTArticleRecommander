@@ -22,9 +22,9 @@ class Options : public utils::AOptionCollection {
   Options() : AOptionCollection("Options about the miner.") {
     AddOption<utils::TypedOption<std::string>>(
         "server_address", "localhost",
-        "The server address of the real backend server.");
+        "The server address of the real backend server, default=localhost");
     AddOption<utils::TypedOption<uint16_t>>(
-        "server_port", 8993, "The server port.");
+        "server_port", 8993, "The server port, default=8993.");
   }
 };
 

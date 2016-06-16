@@ -1,4 +1,4 @@
-// TODO(b01902109<at>ntu.edu.tw): Refactor this ugly code.
+// TODO(cathook): Refactor this ugly code.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +7,8 @@
 #include <unordered_set>
 
 #include "arg_parser/arg_parser.h"
+#include "logging/logger.h"
+#include "miner/miner.h"
 #include "utils/funcs.h"
 #include "utils/options.h"
 
@@ -20,7 +22,9 @@ namespace {
 
 class Options : public utils::AOptionCollection {
  public:
-  Options() : AOptionCollection("") {}
+  Options() : AOptionCollection("") {
+    AddOption<miner::Options>("miner");
+  }
 };
 
 
@@ -100,5 +104,10 @@ int main(int argc, char** argv) {
   configs = new Configs();
 
   HandleProgArgs(argc, argv);
+
+  miner::Miner* m = new miner::Miner(
+      *options->GetOption<miner::Options>("miner"), logging::GetRootLogger());
+
+  delete m;
   return 0;
 }
