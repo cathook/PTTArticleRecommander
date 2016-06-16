@@ -75,6 +75,64 @@ static constexpr size_t NUM_REPLY_MODES = 3;
 
 
 /**
+ * Fully identity of a document.
+ */
+struct DocIdentity : IDumpable, ILoadable {
+  Board board;
+  Identity id;
+
+  DocIdentity() {}
+
+  DocIdentity(Board const& board, Identity const& id) : board(board), id(id) {}
+
+  std::string Dump() const override final { return net::Dump(board, id); }
+
+  bool Load(std::string const& s, size_t* offs) override final {
+    return net::Load(s, offs, &board, &id);
+  }
+};
+
+
+/**
+ * Information results from the analyst.
+ */
+struct DocRelInfo : IDumpable, ILoadable {
+  /**
+   * The positive relative document's identity.
+   */
+  std::vector<DocIdentity> pos_rel_docs;
+
+  /**
+   * The negative relative document's identity.
+   */
+  std::vector<DocIdentity> neg_rel_docs;
+
+  /**
+   * The neutral relative document's identity.
+   */
+  std::vector<DocIdentity> neutral_rel_docs;
+
+  DocRelInfo() {}
+
+  DocRelInfo(std::vector<DocIdentity> const& pos_rel_docs,
+             std::vector<DocIdentity> const& neg_rel_docs,
+             std::vector<DocIdentity> const& neutral_rel_docs) :
+      pos_rel_docs(pos_rel_docs),
+      neg_rel_docs(neg_rel_docs),
+      neutral_rel_docs(neutral_rel_docs) {}
+
+  std::string Dump() const override final {
+    return net::Dump(pos_rel_docs, neg_rel_docs, neutral_rel_docs);
+  }
+
+  bool Load(std::string const& buf, size_t* offs) override final {
+    return net::Load(buf, offs,
+                     &pos_rel_docs, &neg_rel_docs, &neutral_rel_docs);
+  }
+};
+
+
+/**
  * Type of a row of reply message.
  */
 struct ReplyMessage : ILoadable {

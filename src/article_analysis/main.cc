@@ -10,6 +10,7 @@
 #include "arg_parser/arg_parser.h"
 #include "logging/logger.h"
 #include "miner/miner.h"
+#include "server/server.h"
 #include "utils/funcs.h"
 #include "utils/options.h"
 
@@ -26,6 +27,7 @@ class Options : public utils::AOptionCollection {
   Options() : AOptionCollection("") {
     AddOption<miner::Options>("miner");
     AddOption<analyst::Options>("analyst");
+    AddOption<server::Options>("server");
   }
 };
 
@@ -114,6 +116,12 @@ int main(int argc, char** argv) {
   auto a = analyst::CreateAnalyst(
       *options->GetOption<analyst::Options>("analyst"), m, lg);
 
+  auto s = new server::Server(
+      *options->GetOption<server::Options>("server"), a, lg);
+
+  s->RunMainLoop();
+
+  delete s;
   delete a;
   delete m;
   return 0;

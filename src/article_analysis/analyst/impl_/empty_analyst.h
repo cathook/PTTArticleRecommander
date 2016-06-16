@@ -15,8 +15,8 @@ namespace impl_ {
  */
 class EmptyAnalyst : public IAnalyst {
  public:
-  DocInfo GetDocInfo(DocIdentity const& id) const override final {
-    return DocInfo();
+  DocRelInfo GetDocInfo(DocIdentity const& id) const override final {
+    return DocRelInfo();
   }
 };
 

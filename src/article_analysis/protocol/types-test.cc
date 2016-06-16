@@ -11,6 +11,19 @@ using std::string;
 namespace {
 
 
+TEST(DocIdentity, All) {
+  string s("\x01\x00\x00\x00\x00\x00\x00\x00""a"
+           "\x03\x00\x00\x00", 8 + 1 + 4);
+  protocol::types::DocIdentity di;
+  size_t offs = 0;
+  bool ret = di.Load(s, &offs);
+  EXPECT_TRUE(ret);
+  EXPECT_EQ(offs, 8 + 1 + 4);
+  EXPECT_EQ(di.board, "a");
+  EXPECT_EQ(di.id, 3);
+}
+
+
 TEST(ReplyMessage, Load) {
   protocol::types::ReplyMessage rm;
 

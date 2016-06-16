@@ -4,17 +4,23 @@
 
 #include <vector>
 
-#include "analyst/doc_info.h"
+#include "protocol/types.h"
 
 
 namespace analyst {
+
+
+typedef protocol::types::DocRelInfo DocRelInfo;
+
+
+typedef protocol::types::DocIdentity DocIdentity;
 
 
 class IAnalyst {
  public:
   virtual ~IAnalyst() {}
 
-  virtual DocInfo GetDocInfo(DocIdentity const& doc_id) const = 0;
+  virtual DocRelInfo GetDocInfo(DocIdentity const& doc_id) const = 0;
 
  protected:
   IAnalyst() {}
