@@ -1,5 +1,5 @@
-#ifndef ARTICLE_ANALYSIS_UTILS_ARG_PARSER_H_
-#define ARTICLE_ANALYSIS_UTILS_ARG_PARSER_H_
+#ifndef ARTICLE_ANALYSIS_ARG_PARSER_ARG_PARSER_H_
+#define ARTICLE_ANALYSIS_ARG_PARSER_ARG_PARSER_H_
 
 
 #include <functional>
@@ -8,7 +8,7 @@
 #include <vector>
 
 
-namespace utils {
+namespace arg_parser {
 
 
 /**
@@ -140,6 +140,6 @@ class ArgParser {
   std::string err_msg_;
 };
 
-}  // namespace utils
+}  // namespace arg_parser
 
-#endif  // ARTICLE_ANALYSIS_UTILS_ARG_PARSER_H_
+#endif  // ARTICLE_ANALYSIS_ARG_PARSER_ARG_PARSER_H_

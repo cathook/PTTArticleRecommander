@@ -1,4 +1,4 @@
-#include "utils/arg_parser.h"
+#include "arg_parser/arg_parser.h"
 
 #include <assert.h>
 #include <string.h>
@@ -16,7 +16,7 @@ using std::unordered_set;
 using std::vector;
 
 
-namespace utils {
+namespace arg_parser {
 
 
 ArgParser::ArgParser() {}
@@ -45,7 +45,7 @@ void ArgParser::AddOpt(string const& name, string const& value_name,
 
   opt_handlers_.emplace(name, handler);
 
-  auto real_name = FormatStr("%s <%s>", name, value_name);
+  auto real_name = utils::FormatStr("%s <%s>", name, value_name);
   arg_infos_.emplace_back(real_name, real_name, desc);
 }
 
@@ -66,9 +66,9 @@ void ArgParser::AddOptionalOpt(string const& name, string const& value_name,
 
   optional_opt_infos_.emplace(name, OptionalOptInfo_(handler, default_value));
 
-  auto real_name = FormatStr("%s <%s>", name, value_name);
-  auto real_desc = FormatStr("(optional, default=`%s`) %s",
-                             default_value, desc);
+  auto real_name = utils::FormatStr("%s <%s>", name, value_name);
+  auto real_desc = utils::FormatStr("(optional, default=`%s`) %s",
+                                    default_value, desc);
   arg_infos_.emplace_back(real_name, "[" + real_name + "]", real_desc);
 }
 
@@ -90,7 +90,7 @@ bool ArgParser::Parse(int* argc, char const** argv) {
       auto it = flag_handlers_.find(argv[i]);
       if (it != flag_handlers_.end()) {
         if (!it->second(true)) {
-          err_msg_ = FormatStr("Invalid flag `%s`.", it->first);
+          err_msg_ = utils::FormatStr("Invalid flag `%s`.", it->first);
           return false;
         }
         handled_args.emplace(argv[i]);
@@ -101,12 +101,12 @@ bool ArgParser::Parse(int* argc, char const** argv) {
       auto it = opt_handlers_.find(argv[i]);
       if (it != opt_handlers_.end()) {
         if (i + 1 >= *argc) {
-          err_msg_ = FormatStr(
+          err_msg_ = utils::FormatStr(
               "The option `%s` should be followed by an argument.", it->first);
           return false;
         }
         if (!it->second(argv[i + 1])) {
-          err_msg_ = FormatStr(
+          err_msg_ = utils::FormatStr(
               "Invalid option value `%s=%s`.", it->first, argv[i + 1]);
           return false;
         }
@@ -119,12 +119,12 @@ bool ArgParser::Parse(int* argc, char const** argv) {
       auto it = optional_opt_infos_.find(argv[i]);
       if (it != optional_opt_infos_.end()) {
         if (i + 1 >= *argc) {
-          err_msg_ = FormatStr(
+          err_msg_ = utils::FormatStr(
               "The option `%s` should be followed by an argument.", it->first);
           return false;
         }
         if (!it->second.handler(argv[i + 1])) {
-          err_msg_ = FormatStr(
+          err_msg_ = utils::FormatStr(
               "Invalid option value `%s=%s`.", it->first, argv[i + 1]);
           return false;
         }
@@ -138,21 +138,21 @@ bool ArgParser::Parse(int* argc, char const** argv) {
   for (auto it : flag_handlers_) {
     if (handled_args.count(it.first) == 0) {
       if (!it.second(false)) {
-        err_msg_ = FormatStr("Invalid flag `%s`.", it.first);
+        err_msg_ = utils::FormatStr("Invalid flag `%s`.", it.first);
         return false;
       }
     }
   }
   for (auto it : opt_handlers_) {
     if (handled_args.count(it.first) == 0) {
-      err_msg_ = FormatStr("The option `%s` is not optional.", it.first);
+      err_msg_ = utils::FormatStr("The option `%s` is not optional.", it.first);
       return false;
     }
   }
   for (auto it : optional_opt_infos_) {
     if (handled_args.count(it.first) == 0) {
       if (!it.second.handler(it.second.default_value)) {
-        err_msg_ = FormatStr(
+        err_msg_ = utils::FormatStr(
             "Invalid option `%s=%s`.", it.first, it.second.default_value);
         return false;
       }
@@ -200,4 +200,4 @@ void ArgParser::EnsureNameIsOkey_(string const& name) const {
   assert(optional_opt_infos_.count(name) == 0);
 }
 
-}  // namespace utils
+}  // namespace arg_parser

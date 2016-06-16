@@ -6,8 +6,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "protocol/converter.h"
-#include "utils/arg_parser.h"
+#include "arg_parser/arg_parser.h"
 #include "utils/funcs.h"
 #include "utils/options.h"
 
@@ -39,7 +38,7 @@ void SetOptionValue(string const& name, string const& value) {
 
 
 void HandleProgArgs(int argc, char** argv) {
-  utils::ArgParser ap;
+  arg_parser::ArgParser ap;
 
   bool need_help = false;
   ap.AddFlag("-h", "Prints the help document.",
@@ -97,8 +96,6 @@ void HandleProgArgs(int argc, char** argv) {
 
 
 int main(int argc, char** argv) {
-  protocol::converter::Init();
-
   options = new Options();
   configs = new Configs();
 

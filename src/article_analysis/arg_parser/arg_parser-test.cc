@@ -2,14 +2,14 @@
 
 #include <gtest/gtest.h>
 
-#include "utils/arg_parser.h"
+#include "arg_parser/arg_parser.h"
 
 
 namespace {
 
 
 TEST(ArgParser, Usage_Desc) {
-  utils::ArgParser ap;
+  arg_parser::ArgParser ap;
   ap.AddFlag("flag1", "flag1_desc", []() { return true; });
   ap.AddFlag("flag2", "flag2_desc", [](bool k) { return true; });
   ap.AddOpt("opt1", "opt1_value", "opt1_desc",
@@ -40,7 +40,7 @@ TEST(ArgParser, Parse) {
 
   auto ToDbl = [](std::string const& s) { return atof(s.c_str()); };
 
-  utils::ArgParser ap;
+  arg_parser::ArgParser ap;
   ap.AddFlag("a", "", [&]() { a = true; return true; });
   ap.AddFlag("x", "", [&]() { x = true; return true; });
   ap.AddFlag("b", "", [&](bool k) { b = 1 + int(k); return true; });
@@ -81,7 +81,7 @@ TEST(ArgParser, Parse) {
 
 
 TEST(ArgParser, ParseFail) {
-  utils::ArgParser ap;
+  arg_parser::ArgParser ap;
 
   ap.AddFlag("a", "", []() { return false; });
   ap.AddFlag("b", "", [](bool k) { return !k; });
