@@ -123,7 +123,7 @@ class Miner {
   uint16_t server_port_;
   int sock_fd_;
 
-  logging::Logger* logger;
+  logging::Logger* logger_;
 };
 
 }  // namespace miner
