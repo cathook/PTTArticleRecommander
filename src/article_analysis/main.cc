@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "analyst/analyst.h"
 #include "arg_parser/arg_parser.h"
 #include "logging/logger.h"
 #include "miner/miner.h"
@@ -24,6 +25,7 @@ class Options : public utils::AOptionCollection {
  public:
   Options() : AOptionCollection("") {
     AddOption<miner::Options>("miner");
+    AddOption<analyst::Options>("analyst");
   }
 };
 
@@ -105,9 +107,14 @@ int main(int argc, char** argv) {
 
   HandleProgArgs(argc, argv);
 
-  miner::Miner* m = new miner::Miner(
-      *options->GetOption<miner::Options>("miner"), logging::GetRootLogger());
+  auto lg = logging::GetRootLogger();
 
+  auto m = new miner::Miner(*options->GetOption<miner::Options>("miner"), lg);
+
+  auto a = analyst::CreateAnalyst(
+      *options->GetOption<analyst::Options>("analyst"), m, lg);
+
+  delete a;
   delete m;
   return 0;
 }
