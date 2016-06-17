@@ -86,7 +86,7 @@ void Server::RunMainLoop() {
         break;
       }
 
-      auto ret_buf = protocol::net::Dump(analyst_->GetDocInfo(doc_id));
+      auto ret_buf = protocol::net::Dump(analyst_->GetDocRelInfo(doc_id));
       protocol::net::PackageHeader ph(
           protocol::net::PackageType::REPLY_DOC_REL_INFO, ret_buf.length());
       if (!SendAll_(protocol::net::Dump(ph) + ret_buf)) {

@@ -22,7 +22,7 @@ namespace {
 
 class FakeAnalyst : public analyst::IAnalyst {
  public:
-  analyst::DocRelInfo GetDocInfo(
+  analyst::DocRelInfo GetDocRelInfo(
       analyst::DocIdentity const& doc_id) const override final {
     analyst::DocRelInfo ret(vector<analyst::DocIdentity>(2, doc_id),
                             vector<analyst::DocIdentity>(1, doc_id),

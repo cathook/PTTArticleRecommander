@@ -20,7 +20,7 @@ class IAnalyst {
  public:
   virtual ~IAnalyst() {}
 
-  virtual DocRelInfo GetDocInfo(DocIdentity const& doc_id) const = 0;
+  virtual DocRelInfo GetDocRelInfo(DocIdentity const& doc_id) const = 0;
 
  protected:
   IAnalyst() {}
