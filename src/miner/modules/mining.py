@@ -140,6 +140,7 @@ class BBSCrawler(object):
         with open('Metadata_json','w+') as metaDataFp:
             ## iterate through index page like "www.ptt.cc/bbs/car/index.html" to get each POST ID  
             #for indexP in xrange(1, pagesToRun + 1):
+            arr = []
             for indexP in range(startIndex, endIndex):
                 sys.stderr.write('start from index %s ...\n' % indexP)
                 self.logger.debug('start from index %s ...\n' % indexP)
@@ -218,10 +219,12 @@ class BBSCrawler(object):
                         try:
                             strr = self.remove_html_tags(str(post.find(id='main-container')))
                             s = '發信站: 批踢踢實業坊(ptt.cc)'
-                            if s in strr:
-                                contentFile_fp.write(strr[0:strr.find(s)-5])
-                            else:
-                                contentFile_fp.write(strr)
+                            #if s in strr:
+                                #contentFile_fp.write(strr[0:strr.find(s)-5])
+                            #else:
+                                #contentFile_fp.write(strr)
+                            contentFile_fp.write(strr[strr[1:].find('\n')+2:])    
+                            #contentFile_fp.write(strr)
                             contentFile_fp.write('\n')
                             #contentFile_fp.write(self.remove_html_tags(str(post.find(id='main-container'))))
                             
@@ -256,11 +259,14 @@ class BBSCrawler(object):
 
 
                     os.chdir(self.fetch_path)
-                    ## delay for a little while in fear of getting blocked
+                    # delay for a little while in fear of getting blocked
                     time.sleep(0.1)
-                    json.dump({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime}, metaDataFp, indent=7, ensure_ascii=False)
+                    # json.dump({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime}, metaDataFp, indent=7, ensure_ascii=False)
+                    arr.append({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime})
                     ID = ID + 1
+            json.dump(arr, metaDataFp, indent=7, ensure_ascii=False)
             metaDataFp.close()
+            time.sleep(1)
 
             
         ## dump the number of pushes mapping to the file 'num_pushes_json'

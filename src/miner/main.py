@@ -3,11 +3,12 @@
 import argparse
 import logging
 import sys
-
+import os
 from modules.backend_interface import BackendInterface
 from modules.server import Server
 from modules.mining import BBSCrawler
 from modules.build import BuildData
+
 # import somethig
 
 def main():
@@ -29,13 +30,15 @@ def main():
     ap.add_argument('--mining', type=bool, nargs='?', default=False,
                     help='Mining or not')
     opts = ap.parse_args()
+    CurrentDir = os.getcwd()
 
     # TODO(joemen): Change it to the real backend server.
     if opts.mining == True:
         miner = BBSCrawler(opts.board,opts.number,opts.fetch_path)
         miner.getAllPagesInTheBoard()
         miner.getContent()
-    backend = BuildData()  #BackendInterface()
+    os.chdir(CurrentDir)
+    backend = BuildData(opts.fetch_path + opts.board)  #BackendInterface()
     server = Server(backend, opts.server_addr, opts.server_port)
     try:
         server.run()
