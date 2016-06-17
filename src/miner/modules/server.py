@@ -251,7 +251,7 @@ class _SocketConnectionHandler(threading.Thread):
             buf = buf[curr_sent : ]
             total_sent += curr_sent
         if self._stop_flag:
-            raise _StopException()
+            raise self._StopException()
 
     class _StopException(Exception):
         '''An exception which will be raised if the stop flag become true.'''
