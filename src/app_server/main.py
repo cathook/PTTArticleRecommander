@@ -5,6 +5,7 @@ import logging
 import sys
 
 import modules.article_analysis
+import modules.main_handler
 import modules.miner
 
 
@@ -29,18 +30,26 @@ def main():
     ap.add_argument('--article_analysis_cache_size', type=int, nargs='?',
                     default=1000, help='Cached size of the miner proxy.')
 
+    ap.add_argument('--echo_debug', type=bool, nargs='?',
+                    default=False, help='Just become an echo server or not.')
+
     opts = ap.parse_args()
 
     try:
-        m = modules.miner.Miner(opts.miner_server_addr,
-                                opts.miner_server_port,
-                                opts.miner_cache_size,
-                                logger.getChild('Miner'))
-        a = modules.article_analysis.ArticleAnalysis(
-                opts.article_analysis_server_addr,
-                opts.article_analysis_server_port,
-                opts.article_analysis_cache_size,
-                logger.getChild('ArticleAnalysis'))
+        if not opts.echo_debug:
+            m = modules.miner.Miner(opts.miner_server_addr,
+                                    opts.miner_server_port,
+                                    opts.miner_cache_size,
+                                    logger.getChild('Miner'))
+            a = modules.article_analysis.ArticleAnalysis(
+                    opts.article_analysis_server_addr,
+                    opts.article_analysis_server_port,
+                    opts.article_analysis_cache_size,
+                    logger.getChild('ArticleAnalysis'))
+            h = modules.main_handler.MainHandler(
+                    m, a, logger.getChhild('MainHandler'))
+        else:
+            h = modules.main_handler.EchoMainHandler()
     except Exception as e:
         print('Exception: %r' % e)
         sys.exit(1)
