@@ -42,7 +42,7 @@ class TestStringStruct(unittest.TestCase):
         self.assertEqual(net.StringStruct.unpack(b' ' + buf, 1), (s, 8 + 4 + 1))
 
         s = 'meow中文'
-        buf = s.encode('utf-8')
+        buf = b'meow\xe4\xb8\xad\xe6\x96\x87'
         l = len(buf)
         buff = bytes([l]) + b'\x00' * 7 + buf
         self.assertEqual(net.StringStruct.pack(s), buff)
