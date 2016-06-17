@@ -39,6 +39,7 @@ def main():
         miner.getContent()
     os.chdir(CurrentDir)
     backend = BuildData(opts.fetch_path + opts.board)  #BackendInterface()
+    os.chdir(CurrentDir)
     server = Server(backend, opts.server_addr, opts.server_port)
     try:
         server.run()

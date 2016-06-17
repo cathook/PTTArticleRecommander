@@ -219,11 +219,27 @@ class BBSCrawler(object):
                         try:
                             strr = self.remove_html_tags(str(post.find(id='main-container')))
                             s = '發信站: 批踢踢實業坊(ptt.cc)'
+                            List = strr[strr.find(s)+len(s):].split('\n')  # --> ['Line 1', 'Line 2', 'Line 3']
+                            like = 0
+                            dislike = 0
+                            arrow = 0
+                            LikeChinese = '推'
+                            DislikeChinese = '噓'
+                            ArrowChinese = '→'  
+                            for replyString in List:
+                                if len(replyString) != 0:
+                                    if replyString[0] == LikeChinese :
+                                        like = like + 1
+                                    elif replyString[0] == ArrowChinese:
+                                        arrow = arrow + 1
+                                    elif replyString[0] == DislikeChinese:
+                                        dislike = dislike + 1
+                            #print([like,arrow,dislike])        
                             #if s in strr:
                                 #contentFile_fp.write(strr[0:strr.find(s)-5])
                             #else:
                                 #contentFile_fp.write(strr)
-                            contentFile_fp.write(strr[strr[1:].find('\n')+2:])    
+                            contentFile_fp.write(strr[strr[1:].find('\n')+2:])
                             #contentFile_fp.write(strr)
                             contentFile_fp.write('\n')
                             #contentFile_fp.write(self.remove_html_tags(str(post.find(id='main-container'))))
@@ -233,7 +249,7 @@ class BBSCrawler(object):
                             #self.num_pushes[post_id] = int(link.span.contents[0])
                             metaID= ID
                             metaName= str(post_id)
-                            metaPush = str(self.num_pushes[post_id])
+                            metaPush = [like, arrow, dislike]
                             #contentFile_fp.write(str(post_id)+"\n")
                             #contentFile_fp.write(str(link.span.contents[0])+"\n")
                             for span in spans:
@@ -242,8 +258,11 @@ class BBSCrawler(object):
                                     metaAuthor = span.string[0:span.string.find('(')-1]
                                 if count == 2:
                                     metaBoard = span.string
-                                if count == 3:
-                                    metaTitle = span.string
+                                if count == 3:                                    
+                                    if span.string.find("Re:") == -1:
+                                        metaTitle = span.string
+                                    else:
+                                        metaTitle = span.string[4:]
                                 if count == 4:                          
                                     date_object = datetime.strptime(span.string[4:], '%b %d %H:%M:%S %Y')
                                     #contentFile_fp.write(str(date_object) + '\n') ## write title in a first line
