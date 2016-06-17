@@ -76,7 +76,7 @@ TEST(Converter, wstring) {
   protocol::net::Converter<wstring> cw;
   protocol::net::Converter<string> cs;
 
-  string s("中文測試");
+  string s("\xe4\xb8\xad\xe6\x96\x87\xe6\xb8\xac\xe8\xa9\xa6");
   EXPECT_EQ(cw.Dump(L"中文測試"), cs.Dump(s));
 
   size_t offset = 0;

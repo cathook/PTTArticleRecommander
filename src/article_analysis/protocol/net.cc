@@ -22,7 +22,7 @@ void (*init_func_)() = Init_;
 
 
 void Init_() {
-  setlocale(LC_ALL, "");
+  setlocale(LC_ALL, "zh_TW.utf8");
   init_func_ = Pass_;
 }
 
