@@ -1,8 +1,9 @@
 import inspect
+import random
 import socket
 import sys
-import time
 import threading
+import time
 import unittest
 
 from modules import server
@@ -358,7 +359,8 @@ class TestServer(unittest.TestCase):
         super(TestServer, self).__init__(*a, **kwa)
 
     def runTest(self):
-        self.ps = server.Server(_FakeBackendServer(), 'localhost', 8394)
+        self.port = random.randint(8000, 8999)
+        self.ps = server.Server(_FakeBackendServer(), 'localhost', self.port)
         thr = threading.Thread(target=self._run_thread)
         thr.start()
         c1 = self._get_conn()
@@ -376,7 +378,7 @@ class TestServer(unittest.TestCase):
 
     def _get_conn(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('localhost', 8394))
+        s.connect(('localhost', self.port))
         return s
 
     def _run_thread(self):
