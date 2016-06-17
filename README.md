@@ -15,8 +15,8 @@ TODO(?): Fill it.
 ### Install Dependent Packages
 
 This project needs `cmake`, `python3`, C++ compiler, `glibc-dev` and
-`gtest` for the dependent packages.  In debian series distribution,
-you can install all of them by a single command:
+`gtest`, `libopencc-dev` for the dependent packages.  In debian series
+distribution, you can install all of them by a single command:
 ```
 $ sudo apt-get install cmake python3 build-essential libgtest-dev
 ```
@@ -35,6 +35,10 @@ Reference this for details. And then add
 `-DGTEST_ROOT=<path_of_the_gtest_you_installed>` as an argument of the
 command `cmake` later.
 
+You can also use `-DOPENCC_ROOT=<path_of_the_libopencc_you_installed>` to
+specify where the library `opencc` installed if you don't want to install
+the `libopencc-dev` on the system.
+
 ### Compile & Test
 
 1. Create a directory for storing the built out files.  For example:
@@ -43,7 +47,7 @@ command `cmake` later.
    ```
 2. Configure the makefile
    ```
-   $ cmake '<project_root>/src' [ -DCMAKE_INSTALL_PREFIX=<install_destination> ]
+   $ cmake '<project_root>' [ -DCMAKE_INSTALL_PREFIX=<install_destination> ]
    ```
    If you did not specify the directory to install this project, the
    default path will be `build/installed`.
