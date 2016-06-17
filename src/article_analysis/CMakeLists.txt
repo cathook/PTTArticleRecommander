@@ -5,7 +5,9 @@ set(TEST_NAME "test_article_analysis")
 
 set(CMAKE_CXX_FLAGS "-Wall -O2 -std=c++11")
 
-include_directories(.)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/../deps/cppjieba/include)
+include_directories(${PROJECT_SOURCE_DIR}/../deps/cppjieba/deps)
 
 
 file(GLOB BIN_ENTRY_SRC "main.cc")
