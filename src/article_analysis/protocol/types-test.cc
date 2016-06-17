@@ -18,7 +18,7 @@ TEST(DocIdentity, All) {
   size_t offs = 0;
   bool ret = di.Load(s, &offs);
   EXPECT_TRUE(ret);
-  EXPECT_EQ(offs, 8 + 1 + 4);
+  EXPECT_EQ(offs, 8u + 1 + 4);
   EXPECT_EQ(di.board, "a");
   EXPECT_EQ(di.id, 3);
 }
@@ -63,9 +63,9 @@ TEST(DocMetaData, Load) {
   EXPECT_EQ(dm.author, "xyz");
   EXPECT_EQ(dm.post_time, 4);
   EXPECT_EQ(dm.board, "12345");
-  EXPECT_EQ(dm.num_reply_rows[0], 10);
-  EXPECT_EQ(dm.num_reply_rows[1], 11);
-  EXPECT_EQ(dm.num_reply_rows[2], 12);
+  EXPECT_EQ(dm.num_reply_rows[0], 10u);
+  EXPECT_EQ(dm.num_reply_rows[1], 11u);
+  EXPECT_EQ(dm.num_reply_rows[2], 12u);
 }
 
 
@@ -82,7 +82,7 @@ TEST(DocRealData, Load) {
   EXPECT_TRUE(ret);
   EXPECT_EQ(offs, s.length());
   EXPECT_EQ(dd.content, L"1234567");
-  ASSERT_EQ(dd.reply_messages.size(), 1);
+  ASSERT_EQ(dd.reply_messages.size(), 1u);
   EXPECT_EQ(dd.reply_messages[0].mode, protocol::types::ReplyMode::NORMAL);
   EXPECT_EQ(dd.reply_messages[0].user, "abc");
   EXPECT_EQ(dd.reply_messages[0].message, L"ab");

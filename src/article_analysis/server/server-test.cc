@@ -130,9 +130,9 @@ TEST_F(ServerTestFeature, All) {
     ret = dri.Load(s, &offs);
     EXPECT_TRUE(ret);
     EXPECT_EQ(offs, s.length());
-    ASSERT_EQ(dri.pos_rel_docs.size(), 2);
-    ASSERT_EQ(dri.neg_rel_docs.size(), 1);
-    ASSERT_EQ(dri.neutral_rel_docs.size(), 3);
+    ASSERT_EQ(dri.pos_rel_docs.size(), 2u);
+    ASSERT_EQ(dri.neg_rel_docs.size(), 1u);
+    ASSERT_EQ(dri.neutral_rel_docs.size(), 3u);
     for (auto& a : dri.pos_rel_docs) {
       EXPECT_EQ(a.board, di.board);
       EXPECT_EQ(a.id, di.id);

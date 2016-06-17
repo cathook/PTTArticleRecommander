@@ -284,7 +284,7 @@ TEST_F(MinerTestFixture, All) {
 
   {
     auto v = miner->GetDocMetaDataAfterId("board", 123);
-    ASSERT_EQ(v.size(), 1);
+    ASSERT_EQ(v.size(), 1u);
     for (auto& k : v) {
       EXPECT_EQ(k.id, 3);
       EXPECT_EQ(k.prev_id, 3);
@@ -292,16 +292,16 @@ TEST_F(MinerTestFixture, All) {
       EXPECT_EQ(k.author, "aaa");
       EXPECT_EQ(k.post_time, 0);
       EXPECT_EQ(k.board, "board");
-      EXPECT_EQ(k.num_reply_rows[0], 1);
-      EXPECT_EQ(k.num_reply_rows[1], 2);
-      EXPECT_EQ(k.num_reply_rows[2], 3);
+      EXPECT_EQ(k.num_reply_rows[0], 1u);
+      EXPECT_EQ(k.num_reply_rows[1], 2u);
+      EXPECT_EQ(k.num_reply_rows[2], 3u);
     }
     printf("done2\n");
   }
 
   {
     auto v = miner->GetDocMetaDataAfterTime("board", 123);
-    ASSERT_EQ(v.size(), 2);
+    ASSERT_EQ(v.size(), 2u);
     for (auto& k : v) {
       EXPECT_EQ(k.id, 3);
       EXPECT_EQ(k.prev_id, 3);
@@ -309,16 +309,16 @@ TEST_F(MinerTestFixture, All) {
       EXPECT_EQ(k.author, "aaa");
       EXPECT_EQ(k.post_time, 0);
       EXPECT_EQ(k.board, "board");
-      EXPECT_EQ(k.num_reply_rows[0], 1);
-      EXPECT_EQ(k.num_reply_rows[1], 2);
-      EXPECT_EQ(k.num_reply_rows[2], 3);
+      EXPECT_EQ(k.num_reply_rows[0], 1u);
+      EXPECT_EQ(k.num_reply_rows[1], 2u);
+      EXPECT_EQ(k.num_reply_rows[2], 3u);
     }
     printf("done3\n");
   }
 
   {
     auto v = miner->GetDocMetaDataOfAuthor("bomm", "author");
-    ASSERT_EQ(v.size(), 3);
+    ASSERT_EQ(v.size(), 3u);
     for (auto& k : v) {
       EXPECT_EQ(k.id, 3);
       EXPECT_EQ(k.prev_id, 3);
@@ -326,16 +326,16 @@ TEST_F(MinerTestFixture, All) {
       EXPECT_EQ(k.author, "aaa");
       EXPECT_EQ(k.post_time, 0);
       EXPECT_EQ(k.board, "bomm");
-      EXPECT_EQ(k.num_reply_rows[0], 1);
-      EXPECT_EQ(k.num_reply_rows[1], 2);
-      EXPECT_EQ(k.num_reply_rows[2], 3);
+      EXPECT_EQ(k.num_reply_rows[0], 1u);
+      EXPECT_EQ(k.num_reply_rows[1], 2u);
+      EXPECT_EQ(k.num_reply_rows[2], 3u);
     }
     printf("done4\n");
   }
 
   {
     auto v = miner->GetDocMetaDataSeries("wwww", 13);
-    ASSERT_EQ(v.size(), 4);
+    ASSERT_EQ(v.size(), 4u);
     for (auto& k : v) {
       EXPECT_EQ(k.id, 3);
       EXPECT_EQ(k.prev_id, 3);
@@ -343,9 +343,9 @@ TEST_F(MinerTestFixture, All) {
       EXPECT_EQ(k.author, "aaa");
       EXPECT_EQ(k.post_time, 0);
       EXPECT_EQ(k.board, "wwww");
-      EXPECT_EQ(k.num_reply_rows[0], 1);
-      EXPECT_EQ(k.num_reply_rows[1], 2);
-      EXPECT_EQ(k.num_reply_rows[2], 3);
+      EXPECT_EQ(k.num_reply_rows[0], 1u);
+      EXPECT_EQ(k.num_reply_rows[1], 2u);
+      EXPECT_EQ(k.num_reply_rows[2], 3u);
     }
     printf("done5\n");
   }
@@ -353,7 +353,7 @@ TEST_F(MinerTestFixture, All) {
   {
     auto d = miner->GetDocRealData("haha", 514);
     EXPECT_EQ(d.content, L"meow");
-    EXPECT_EQ(d.reply_messages.size(), 0);
+    EXPECT_EQ(d.reply_messages.size(), 0u);
     printf("done6\n");
   }
 }

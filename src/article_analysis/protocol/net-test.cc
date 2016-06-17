@@ -113,7 +113,7 @@ TEST(Converter, array) {
   size_t offset = 0;
   bool ret = c.Load(c.Dump(a), &offset, &b);
   EXPECT_TRUE(ret);
-  EXPECT_EQ(offset, 2 * 3);
+  EXPECT_EQ(offset, 2u * 3);
   EXPECT_EQ(a[0], b[0]);
   EXPECT_EQ(a[1], b[1]);
   EXPECT_EQ(a[2], b[2]);

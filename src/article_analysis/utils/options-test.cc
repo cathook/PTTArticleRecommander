@@ -81,7 +81,7 @@ TEST(MyOptionCollectionA, All) {
       it.name();
       ++counter;
     }
-    EXPECT_EQ(counter, 0);
+    EXPECT_EQ(counter, 0u);
   }
 
   {
@@ -90,7 +90,7 @@ TEST(MyOptionCollectionA, All) {
       it.name();
       ++counter;
     }
-    EXPECT_EQ(counter, 0);
+    EXPECT_EQ(counter, 0u);
   }
 }
 
