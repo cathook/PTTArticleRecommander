@@ -9,7 +9,8 @@ from optparse import OptionParser
 from optparse import Option, OptionValueError
 import urllib.request as urllib2
 import os, sys
-
+import importlib
+importlib.reload(sys)
 
 LOGNAME = 'log'
 VERSION = '0.2'
@@ -205,8 +206,14 @@ class BBSCrawler(object):
                             contentFile_fp.write('\n')
                         count = count + 1
                     contentFile_fp.write('\n')
-                    contentFile_fp.write(self.remove_html_tags(str(post.find(id='main-container'))))
-                    contentFile_fp.close()
+                    #contentFile_fp.write(self.remove_html_tags(str(post.find(id='main-container'))))
+                    strr = self.remove_html_tags(str(post.find(id='main-container')))
+                    s = '發信站: 批踢踢實業坊(ptt.cc)'
+                    if s in strr:
+                        contentFile_fp.write(strr[0:strr.find(s)-5])
+                    else:
+                        contentFile_fp.write(strr)
+                    contentFile_fp.close()                    
                 
                 os.chdir(self.fetch_path)
                 ## delay for a little while in fear of getting blocked
