@@ -6,8 +6,9 @@ import sys
 
 from modules.backend_interface import BackendInterface
 from modules.server import Server
-from modules.real_main import BBSCrawler
-
+from modules.mining import BBSCrawler
+from modules.build import BuildData
+# import somethig
 
 def main():
     logging.basicConfig(level=logging.INFO)
@@ -34,7 +35,7 @@ def main():
         miner = BBSCrawler(opts.board,opts.number,opts.fetch_path)
         miner.getAllPagesInTheBoard()
         miner.getContent()
-    backend = BackendInterface()
+    backend = BuildData()  #BackendInterface()
     server = Server(backend, opts.server_addr, opts.server_port)
     try:
         server.run()

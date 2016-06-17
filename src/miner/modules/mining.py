@@ -136,92 +136,135 @@ class BBSCrawler(object):
         self.statisticDic['totalPostNum'] = 0
         self.statisticDic['fetchFailureNum'] = 0
 
-        ## iterate through index page like "www.ptt.cc/bbs/car/index.html" to get each POST ID  
-        #for indexP in xrange(1, pagesToRun + 1):
-        for indexP in range(startIndex, endIndex):
-            sys.stderr.write('start from index %s ...\n' % indexP)
-            self.logger.debug('start from index %s ...\n' % indexP)
-            try:
-                if (self.useHeader): ## if the page require header 
-                    request = urllib2.Request(self.page_url(indexP), headers=self.headers)
-                    page = bs4.BeautifulSoup(urllib2.urlopen(request).read(), "lxml")
-                else:
-                    page = bs4.BeautifulSoup(urllib2.urlopen(self.page_url(indexP)).read(), "lxml")
-            except:
-                sys.stderr.write('Error occured while fetching %s\n' % self.page_url(indexP))
-                self.logger.error('Error occured while fetching %s\n' % self.page_url(indexP))
-                ## how many index has failed 
-                self.statisticDic['indexFailure'] += 1
-                continue
-            
-            ## iterate through posts on this page
-            for link in page.find_all(class_='r-ent'):
-                
-                try: 
-                    ## For instance: "M.1368632629.A.AF7"
-                    post_id = link.a.get('href').split('/')[-1][:-5]
-                    ## Record the number of pushes from <div class="nrec">, which is an integer from -100 to 100
-                    if (link.span):
-                        self.num_pushes[post_id] = int(link.span.contents[0])
-                    ## if can't find push, set 0 push 
-                    else:
-                        self.num_pushes[post_id] = 0
-                    
-                except:
-                    sys.stderr.write('Error occured while fetching %s\n' % post_id)
-                    self.logger.error('Error occured while fetching %s\n' % post_id)
-                    continue
-                
-                ## Fetch the post content via post id, ex. http://www.ptt.cc/bbs/car/M.1400136465.A.DD5.html     
-                self.statisticDic['totalPostNum'] += 1
+        ID = 1
+        with open('Metadata_json','w+') as metaDataFp:
+            ## iterate through index page like "www.ptt.cc/bbs/car/index.html" to get each POST ID  
+            #for indexP in xrange(1, pagesToRun + 1):
+            for indexP in range(startIndex, endIndex):
+                sys.stderr.write('start from index %s ...\n' % indexP)
+                self.logger.debug('start from index %s ...\n' % indexP)
                 try:
-                                            
-                    sys.stderr.write('Fetching %s ...\n' % post_id)
-                    self.logger.info('Fetching %s ...\n' % post_id)
                     if (self.useHeader): ## if the page require header 
-                        request = urllib2.Request(self.post_url(post_id), headers=self.headers)
-                        post = bs4.BeautifulSoup(urllib2.urlopen(request).read(), "lxml")
+                        request = urllib2.Request(self.page_url(indexP), headers=self.headers)
+                        page = bs4.BeautifulSoup(urllib2.urlopen(request).read(), "lxml")
                     else:
-                        post = bs4.BeautifulSoup(urllib2.urlopen(self.post_url(post_id)).read(), "lxml")
+                        page = bs4.BeautifulSoup(urllib2.urlopen(self.page_url(indexP)).read(), "lxml")
                 except:
-                    sys.stderr.write('Error occured while fetching %s\n' % self.post_url(post_id))
-                    self.logger.error('Error occured while fetching %s\n' % self.post_url(post_id))
-                    ##self.fetchFailureNum += 1
-                    self.statisticDic['fetchFailureNum'] += 1
+                    sys.stderr.write('Error occured while fetching %s\n' % self.page_url(indexP))
+                    self.logger.error('Error occured while fetching %s\n' % self.page_url(indexP))
+                    ## how many index has failed 
+                    self.statisticDic['indexFailure'] += 1
                     continue
-    
-                ## writing the content file named post ID 
-                with open(post_id, 'w') as contentFile_fp:
-                    spans = post.find_all('span', {'class' : 'article-meta-value'})
-                    count = 1
-                    contentFile_fp.write(str(post_id)+"\n")
-                    contentFile_fp.write(str(link.span.contents[0])+"\n")
-                    for span in spans:
-                        #print(span.string)
-                        if count == 4:                          
-                            date_object = datetime.strptime(span.string[4:], '%b %d %H:%M:%S %Y')
-                            contentFile_fp.write(str(date_object) + '\n') ## write title in a first line
-                        else:
-                            contentFile_fp.write(span.string) ## write title in a first line
-                            contentFile_fp.write('\n')
-                        count = count + 1
-                    contentFile_fp.write('\n')
-                    #contentFile_fp.write(self.remove_html_tags(str(post.find(id='main-container'))))
-                    strr = self.remove_html_tags(str(post.find(id='main-container')))
-                    s = '發信站: 批踢踢實業坊(ptt.cc)'
-                    if s in strr:
-                        contentFile_fp.write(strr[0:strr.find(s)-5])
-                    else:
-                        contentFile_fp.write(strr)
-                    contentFile_fp.close()                    
                 
-                os.chdir(self.fetch_path)
-                ## delay for a little while in fear of getting blocked
-                time.sleep(0.1)
+                ## iterate through posts on this page
+                for link in page.find_all(class_='r-ent'):
+                    
+                    try: 
+                        ## For instance: "M.1368632629.A.AF7"
+                        post_id = link.a.get('href').split('/')[-1][:-5]
+                        ## Record the number of pushes from <div class="nrec">, which is an integer from -100 to 100
+                        if (link.span):
+                            if link.span.contents[0] == u'爆' :
+                                self.num_pushes[post_id] = 100
+                            elif link.span.contents[0] == "X1" :
+                                self.num_pushes[post_id] = -10
+                            elif link.span.contents[0] == "X2" :
+                                self.num_pushes[post_id] = -20
+                            elif link.span.contents[0] == "X3" :
+                                self.num_pushes[post_id] = -30
+                            elif link.span.contents[0] == "X4" :
+                                self.num_pushes[post_id] = -40
+                            elif link.span.contents[0] == "X5" :
+                                self.num_pushes[post_id] = -50
+                            elif link.span.contents[0] == "X6" :
+                                self.num_pushes[post_id] = -60
+                            elif link.span.contents[0] == "X7" :
+                                self.num_pushes[post_id] = -70
+                            elif link.span.contents[0] == "X8" :
+                                self.num_pushes[post_id] = -80
+                            elif link.span.contents[0] == "X9" :
+                                self.num_pushes[post_id] = -90
+                            elif link.span.contents[0] == "XX" :
+                                self.num_pushes[post_id] = -100
+                            else:
+                                self.num_pushes[post_id] = int(link.span.contents[0])
+                        ## if can't find push, set 0 push 
+                        else:
+                            self.num_pushes[post_id] = 0
+                    except:
+                        sys.stderr.write('Error occured while fetching2 %s\n' % post_id)
+                        self.logger.error('Error occured while fetching %s\n' % post_id)
+                        continue
+                    
+                    ## Fetch the post content via post id, ex. http://www.ptt.cc/bbs/car/M.1400136465.A.DD5.html     
+                    self.statisticDic['totalPostNum'] += 1
+                    try:
+                                                
+                        sys.stderr.write('Fetching %s ...\n' % post_id)
+                        self.logger.info('Fetching %s ...\n' % post_id)
+                        if (self.useHeader): ## if the page require header 
+                            request = urllib2.Request(self.post_url(post_id), headers=self.headers)
+                            post = bs4.BeautifulSoup(urllib2.urlopen(request).read(), "lxml")
+                        else:
+                            post = bs4.BeautifulSoup(urllib2.urlopen(self.post_url(post_id)).read(), "lxml")
+                    except:
+                        sys.stderr.write('Error occured while fetching %s\n' % self.post_url(post_id))
+                        self.logger.error('Error occured while fetching %s\n' % self.post_url(post_id))
+                        ##self.fetchFailureNum += 1
+                        self.statisticDic['fetchFailureNum'] += 1
+                        continue
+        
+                    with open(post_id, 'w') as contentFile_fp:
+                        try:
+                            strr = self.remove_html_tags(str(post.find(id='main-container')))
+                            s = '發信站: 批踢踢實業坊(ptt.cc)'
+                            if s in strr:
+                                contentFile_fp.write(strr[0:strr.find(s)-5])
+                            else:
+                                contentFile_fp.write(strr)
+                            contentFile_fp.write('\n')
+                            #contentFile_fp.write(self.remove_html_tags(str(post.find(id='main-container'))))
+                            
+                            spans = post.find_all('span', {'class' : 'article-meta-value'})
+                            count = 1
+                            #self.num_pushes[post_id] = int(link.span.contents[0])
+                            metaID= ID
+                            metaName= str(post_id)
+                            metaPush = str(self.num_pushes[post_id])
+                            #contentFile_fp.write(str(post_id)+"\n")
+                            #contentFile_fp.write(str(link.span.contents[0])+"\n")
+                            for span in spans:
+                                #print(span.string)
+                                if count == 1:
+                                    metaAuthor = span.string[0:span.string.find('(')-1]
+                                if count == 2:
+                                    metaBoard = span.string
+                                if count == 3:
+                                    metaTitle = span.string
+                                if count == 4:                          
+                                    date_object = datetime.strptime(span.string[4:], '%b %d %H:%M:%S %Y')
+                                    #contentFile_fp.write(str(date_object) + '\n') ## write title in a first line
+                                    metaTime = str(date_object)
+                                #else:
+                                    #contentFile_fp.write(span.string) ## write title in a first line
+                                    #contentFile_fp.write('\n')
+                                count = count + 1
+                        except:
+                            sys.stderr.write('Error occured while fetching4 %s\n' % metaName)
+                            continue
+                        contentFile_fp.close()
 
-        
+
+                    os.chdir(self.fetch_path)
+                    ## delay for a little while in fear of getting blocked
+                    time.sleep(0.1)
+                    json.dump({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime}, metaDataFp, indent=7, ensure_ascii=False)
+                    ID = ID + 1
+            metaDataFp.close()
+
+            
         ## dump the number of pushes mapping to the file 'num_pushes_json'
-        
+        """
         with open('num_pushes_json', 'w') as numPushesFp, open('metadata_dic_json', 'w') as metadataDicFp:
             self.logger.info('Saving the metadata dic and push mapping into JSON')
             #numPushesFp = open('num_pushes_json', 'w')
@@ -230,6 +273,7 @@ class BBSCrawler(object):
             json.dump(self.metadic, metadataDicFp)
             numPushesFp.close()
             metadataDicFp.close()
+        """
             
         ## do the final logging and printing all numbers     
         self.logger.info('Ending crawling "%s" ... !! \n' % self.board_name)
