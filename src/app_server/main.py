@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 
+import modules.article_analysis
 import modules.miner
 
 
@@ -20,12 +21,26 @@ def main():
     ap.add_argument('--miner_cache_size', type=int, nargs='?',
                     default=1000, help='Cached size of the miner proxy.')
 
+    ap.add_argument('--article_analysis_server_addr', type=str, nargs='?',
+                    default='localhost',
+                    help='Address of the article analysis server')
+    ap.add_argument('--article_analysis_server_port', type=int, nargs='?',
+                    default=8997, help='Port of the article analysis server')
+    ap.add_argument('--article_analysis_cache_size', type=int, nargs='?',
+                    default=1000, help='Cached size of the miner proxy.')
+
     opts = ap.parse_args()
 
     try:
         m = modules.miner.Miner(opts.miner_server_addr,
                                 opts.miner_server_port,
-                                opts.miner_cache_size)
+                                opts.miner_cache_size,
+                                logger.getChild('Miner'))
+        a = modules.article_analysis.ArticleAnalysis(
+                opts.article_analysis_server_addr,
+                opts.article_analysis_server_port,
+                opts.article_analysis_cache_size,
+                logger.getChild('ArticleAnalysis'))
     except Exception as e:
         print('Exception: %r' % e)
         sys.exit(1)

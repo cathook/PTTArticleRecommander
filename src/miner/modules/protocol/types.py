@@ -105,3 +105,26 @@ class DocRealData(object):
     def dump(self):
         return (net.StringStruct.pack(self.content) +
                 net.ArrayStruct.pack(self.reply_messages, net.CustomStruct))
+
+
+class DocRelInfo(object):
+    _RDS = net.CustomStruct(DocIdentity)
+    def __init__(self, pos_rel_docs, neg_rel_docs, neutral_rel_docs):
+        self.pos_rel_docs = [a for a in pos_rel_docs]
+        self.neg_rel_docs = [a for a in neg_rel_docs]
+        self.neutral_rel_docs = [a for a in neutral_rel_docs]
+
+    def dump(self):
+        return net.ArrayStruct.pack(self.pos_rel_docs, net.CustomStruct) + \
+                net.ArrayStruct.pack(self.neg_rel_docs, net.CustomStruct) + \
+                net.ArrayStruct.pack(self.neutral_rel_docs, net.CustomStruct)
+
+    @staticmethod
+    def load(buf, offs=0):
+        (pos_rel_docs, offs) = net.ArrayStruct.unpack(buf, offs,
+                                                      DocRelInfo._RDS)
+        (neg_rel_docs, offs) = net.ArrayStruct.unpack(buf, offs,
+                                                      DocRelInfo._RDS)
+        (neutral_rel_docs, offs) = net.ArrayStruct.unpack(buf, offs,
+                                                          DocRelInfo._RDS)
+        return (DocRelInfo(pos_rel_docs, neg_rel_docs, neutral_rel_docs), offs)

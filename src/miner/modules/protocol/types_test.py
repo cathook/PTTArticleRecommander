@@ -72,3 +72,25 @@ class TestDocRealData(unittest.TestCase):
                         b'\x02\x00\x00\x00\x00\x00\x00\x00',
                         r1.dump(), r2.dump()])
         self.assertEqual(drd.dump(), buf)
+
+
+class TestDocRelInfo(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestDocRelInfo, self).__init__(*args, **kwargs)
+
+    def runTest(self):
+        dri = types.DocRelInfo([], [], [types.DocIdentity('board', 123)])
+        buf = b'\x00\x00\x00\x00\x00\x00\x00\x00' + \
+                b'\x00\x00\x00\x00\x00\x00\x00\x00' + \
+                b'\x01\x00\x00\x00\x00\x00\x00\x00' + \
+                types.DocIdentity('board', 123).dump()
+
+        buf2 = dri.dump()
+        self.assertEqual(buf, buf2)
+
+        dri2 = types.DocRelInfo.load(buf)[0]
+        self.assertEqual(len(dri2.pos_rel_docs), 0)
+        self.assertEqual(len(dri2.neg_rel_docs), 0)
+        self.assertEqual(len(dri2.neutral_rel_docs), 1)
+        self.assertEqual(dri2.neutral_rel_docs[0].board, 'board')
+        self.assertEqual(dri2.neutral_rel_docs[0].idid, 123)

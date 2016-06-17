@@ -41,6 +41,9 @@ class PackageType(object):
     QUERY_ID_BY_URL = 0xa00
     REPLY_ID_BY_URL = QUERY_ID_BY_URL | REPLY_QUERY_BIT
 
+    QUERY_DOC_REL_INFO = 0xb00
+    REPLY_DOC_REL_INFO = QUERY_DOC_REL_INFO | REPLY_QUERY_BIT
+
 
 class PackageHeader(object):
     '''A struct of package's header'''
@@ -86,6 +89,16 @@ class ArrayStruct(object):
         y = b''.join(element_struct.pack(b) for b in a)
         return x + y
 
+    @staticmethod
+    def unpack(buf, offs, element_struct):
+        x = struct.unpack('<Q', buf[offs : offs + 8])[0]
+        offs += 8
+        ret = []
+        for i in range(x):
+            (a, offs) = element_struct.unpack(buf, offs)
+            ret.append(a)
+        return (ret, offs)
+
 
 class IdentityStruct(object):
     '''Struct for document idnetity'''
@@ -118,6 +131,12 @@ class ReplyModeStruct(object):
 
 class CustomStruct(object):
     '''A struct which calls the input structure's dump method for packing.'''
+    def __init__(self, meta):
+        self._meta = meta
+
     @staticmethod
     def pack(a):
         return a.dump()
+
+    def unpack(self, buf, offs=0):
+        return self._meta.load(buf, offs)

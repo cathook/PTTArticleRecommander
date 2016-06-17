@@ -1,7 +1,9 @@
 import inspect
+import logging
 import socket
 import sys
 import threading
+import time
 import unittest
 
 from modules import miner
@@ -50,6 +52,7 @@ class _FakeServer(object):
                 elif ph.typee == net.PackageType.QUERY_ID_BY_URL:
                     self._handle_query_id_by_url(ph)
                 else:
+                    print('unknown type')
                     raise Exception()
                 self.num_queries += 1
         except _GoodError as _:
@@ -105,8 +108,10 @@ class TestMinerProxy(unittest.TestCase):
         server = _FakeServer()
         thr = threading.Thread(target=server.main_loop)
         thr.start()
+        time.sleep(1)
 
-        miner_proxy = miner._MinerProxy('localhost', server.port)
+        miner_proxy = miner._MinerProxy('localhost', server.port,
+                                        logging.getLogger())
         u = miner_proxy.get_url_by_doc_identity(types.DocIdentity('board',
                                                                   1234))
         self.assertEqual(u, 'board1234')
@@ -126,9 +131,10 @@ class TestMiner(unittest.TestCase):
         self._server = _FakeServer()
         self._thr = threading.Thread(target=self._server.main_loop)
         self._thr.start()
+        time.sleep(1)
 
     def runTest(self):
-        m = miner.Miner('localhost', self._server.port, 3)
+        m = miner.Miner('localhost', self._server.port, 3, logging.getLogger())
         ct = 0
 
         u = m.get_url_by_doc_identity(types.DocIdentity('board', 11244))

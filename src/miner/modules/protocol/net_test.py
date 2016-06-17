@@ -57,10 +57,17 @@ class TestArrayStruct(unittest.TestCase):
         arr = ['a', 'b', 'c']
         buf = b'\x03\x00\x00\x00\x00\x00\x00\x00abc'
         self.assertEqual(net.ArrayStruct.pack(arr, self._S()), buf)
+        arr2 = net.ArrayStruct.unpack(buf, 0, self._S())[0]
+        self.assertEqual(len(arr), len(arr2))
+        for i in range(len(arr)):
+            self.assertEqual(arr[i], arr2[i])
 
     class _S(object):
         def pack(self, c):
             return bytes([ord(c)])
+
+        def unpack(self, buf, offs=0):
+            return (chr(buf[offs]), offs + 1)
 
 
 class TestIdentityStruct(unittest.TestCase):
@@ -99,3 +106,8 @@ class TestCustomStruct(unittest.TestCase):
 
         self.assertEqual(header.SIZE, len(buf))
         self.assertEqual(net.CustomStruct.pack(header), buf)
+
+        h2, offs = net.CustomStruct(net.PackageHeader).unpack(buf)
+        self.assertEqual(offs, len(buf))
+        self.assertEqual(h2.typee, header.typee)
+        self.assertEqual(h2.size, header.size)

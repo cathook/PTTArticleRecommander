@@ -4,6 +4,7 @@ import threading
 
 from modules.protocol import net
 from modules.protocol import types
+from modules import proxy_client
 
 
 class MinerError(Exception):
@@ -15,20 +16,26 @@ class _MinerProxy(object):
     '''A proxy to the real miner server.
 
     Attributes:
-        _sock: The socket object.
+        _logger: The logger.
         _lock: A lock to prevent race condition on the internet communicate.
+        _proxy_client: An instance of `proxy_client.ProxyClient`
     '''
-    def __init__(self, addr, port):
+    def __init__(self, addr, port, logger):
         '''Constructor.
 
         Args:
             addr: Address of the server.
             port: Port of the server.
+            logger: The logger.
         '''
-        self._sock = None
+        self._logger = logger
         self._lock = threading.Lock()
-
-        self._init_sock(addr, port)
+        try:
+            self._proxy_client = proxy_client.ProxyClient(addr, port,
+                                                          self._logger)
+        except proxy_client.ProxyClientError as e:
+            self._logger.error('Cannot connect to the miner server.')
+            raise e
 
     def get_url_by_doc_identity(self, identity):
         '''Gets a documnent url by its identity.
@@ -38,14 +45,11 @@ class _MinerProxy(object):
         Returns: The document's url.
         '''
         with self._lock:
-            try:
-                self._send_pkg(net.PackageType.QUERY_URL_BY_ID, identity.dump())
-                ph = self._recv_header()
-                if ph.typee != net.PackageType.REPLY_URL_BY_ID:
-                    raise MinerError('Wrong protocol.')
-                return self._recv_and_unpack(ph.size, net.StringStruct.unpack)
-            except socket.error as e:
-                raise MinerError('Cannot send: %r' % e)
+            self._logger.info('Query url by doc identity.')
+            self._proxy_client.send_pkg(
+                    net.PackageType.QUERY_URL_BY_ID, identity.dump())
+            return self._recv_and_unpack(net.PackageType.REPLY_URL_BY_ID,
+                                         net.StringStruct.unpack)
 
     def get_doc_identity_by_url(self, url):
         '''Gets a documnent identity by its url.
@@ -55,56 +59,21 @@ class _MinerProxy(object):
         Returns: The document's identity.
         '''
         with self._lock:
-            try:
-                self._send_pkg(net.PackageType.QUERY_ID_BY_URL,
-                               net.StringStruct.pack(url))
-                ph = self._recv_header()
-                if ph.typee != net.PackageType.REPLY_ID_BY_URL:
-                    raise MinerError('Wrong protocol.')
-                return self._recv_and_unpack(ph.size, types.DocIdentity.load)
-            except socket.error as e:
-                raise MinerError('Cannot send: %r' % e)
+            self._logger.info('Query doc identity by url.')
+            self._proxy_client.send_pkg(net.PackageType.QUERY_ID_BY_URL,
+                                        net.StringStruct.pack(url))
+            return self._recv_and_unpack(net.PackageType.REPLY_ID_BY_URL,
+                                         types.DocIdentity.load)
 
-    def _init_sock(self, addr, port):
-        try:
-            self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._sock.connect((addr, port))
-        except socket.error as e:
-            raise MinerError('Cannot connect to the miner server %r' % e)
-
-    def _send_pkg(self, typee, buf):
-        try:
-            self._sock.sendall(net.PackageHeader(typee, len(buf)).dump() + buf)
-        except socket.error as e:
-            raise MinerError('Cannot send message.')
-
-    def _recv_header(self):
-        try:
-            buf = self._recv_all(net.PackageHeader.SIZE)
-        except MinerError as e:
-            raise MinerError('Receiving PackageHeader error: %r' % e)
-        return net.PackageHeader.load(buf)[0]
-    
-    def _recv_and_unpack(self, sz, unpack_func):
-        try:
-            (ret, offs) = unpack_func(self._recv_all(sz))
-        except MinerError as e:
-            raise MinerError('Cannot recv package: %r' % e)
-        if offs != sz:
-            raise MinerError('Wrong format')
-        return ret
-
-    def _recv_all(self, sz):
-        buf = b''
-        while len(buf) < sz:
-            try:
-                a = self._sock.recv(sz - len(buf))
-            except socket.error as e:
-                raise MinerError('Cannot recv: %r' % e)
-            if not a:
-                raise MinerError('Cannot recv.')
-            buf += a
-        return buf
+    def _recv_and_unpack(self, typee, unpack_func):
+        ph = self._proxy_client.recv_header()
+        if ph.typee != typee:
+            raise MinerError('Wrong return package type.')
+        buf = self._proxy_client.recv_all(ph.size)
+        (out, offs) = unpack_func(buf)
+        if offs != ph.size:
+            raise Miner('Wrong format.')
+        return out
 
 
 class Miner(object):
@@ -114,18 +83,22 @@ class Miner(object):
         _miner_proxy: The real miner server.
         _max_cached_size: The maximum number of cached data.
         _cache: The cached mapping.
+        _logger: The logger.
     '''
-    def __init__(self, addr, port, max_cached_size):
+    def __init__(self, addr, port, max_cached_size, logger):
         '''Constructor.
 
         Args:
             addr: Address of the real server.
             port: Port of the real server.
             max_cached_size: Maximum cached size.
+            logger: The logger.
         '''
-        self._miner_proxy = _MinerProxy(addr, port)
+        self._logger = logger
         self._max_cached_size = max_cached_size
         self._cache = []
+        self._miner_proxy = _MinerProxy(addr, port,
+                                        self._logger.getChild('proxy'))
 
     def get_url_by_doc_identity(self, identity):
         '''Gets a documnent url by its identity.
