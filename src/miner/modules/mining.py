@@ -283,7 +283,7 @@ class BBSCrawler(object):
                     # json.dump({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime}, metaDataFp, indent=7, ensure_ascii=False)
                     arr.append({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime})
                     ID = ID + 1
-            json.dump(arr, metaDataFp, indent=7, ensure_ascii=False)
+                json.dump(arr, metaDataFp, indent=7, ensure_ascii=False)
             metaDataFp.close()
             time.sleep(1)
 
