@@ -15,7 +15,7 @@ importlib.reload(sys)
 LOGNAME = 'log'
 VERSION = '0.2'
 globvar = 0
-arr = []
+#arr = []
 class BBSCrawler(object):
     '''
     @author: Paul Yang
@@ -138,6 +138,7 @@ class BBSCrawler(object):
         self.statisticDic['fetchFailureNum'] = 0
 
         ID = 1
+        self.arr = []
         with open('Metadata_json','w+') as metaDataFp:
             ## iterate through index page like "www.ptt.cc/bbs/car/index.html" to get each POST ID  
             #for indexP in xrange(1, pagesToRun + 1):
@@ -283,9 +284,9 @@ class BBSCrawler(object):
                     # delay for a little while in fear of getting blocked
                     time.sleep(0.1)
                     # json.dump({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime}, metaDataFp, indent=7, ensure_ascii=False)
-                    arr.append({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime})
+                    self.arr.append({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime})
                     ID = ID + 1
-            json.dump(arr, metaDataFp, indent=7, ensure_ascii=False)
+            json.dump(self.arr, metaDataFp, indent=7, ensure_ascii=False)
             metaDataFp.close()
             time.sleep(0.2)
 
