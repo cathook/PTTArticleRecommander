@@ -15,6 +15,7 @@ importlib.reload(sys)
 LOGNAME = 'log'
 VERSION = '0.2'
 globvar = 0
+arr = []
 class BBSCrawler(object):
     '''
     @author: Paul Yang
@@ -140,7 +141,6 @@ class BBSCrawler(object):
         with open('Metadata_json','w+') as metaDataFp:
             ## iterate through index page like "www.ptt.cc/bbs/car/index.html" to get each POST ID  
             #for indexP in xrange(1, pagesToRun + 1):
-            arr = []
             for indexP in range(startIndex, endIndex):
                 sys.stderr.write('start from index %s ...\n' % indexP)
                 self.logger.debug('start from index %s ...\n' % indexP)
@@ -163,6 +163,7 @@ class BBSCrawler(object):
                     try: 
                         ## For instance: "M.1368632629.A.AF7"
                         post_id = link.a.get('href').split('/')[-1][:-5]
+                        """
                         ## Record the number of pushes from <div class="nrec">, which is an integer from -100 to 100
                         if (link.span):
                             if link.span.contents[0] == u'爆' :
@@ -192,6 +193,7 @@ class BBSCrawler(object):
                         ## if can't find push, set 0 push 
                         else:
                             self.num_pushes[post_id] = 0
+                        """
                     except:
                         sys.stderr.write('Error occured while fetching2 %s\n' % post_id)
                         self.logger.error('Error occured while fetching %s\n' % post_id)
@@ -285,7 +287,7 @@ class BBSCrawler(object):
                     ID = ID + 1
             json.dump(arr, metaDataFp, indent=7, ensure_ascii=False)
             metaDataFp.close()
-            time.sleep(1)
+            time.sleep(0.2)
 
             
         ## dump the number of pushes mapping to the file 'num_pushes_json'
