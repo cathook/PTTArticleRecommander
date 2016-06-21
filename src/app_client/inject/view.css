@@ -1,0 +1,31 @@
+/**
+ * Style sheet used in the view part.
+ */
+
+
+#pttr-show-list {
+  background-color: rgba(0, 0, 0, 1);
+  bottom: 0;
+  color: #fff;
+  position: fixed;
+  right: 0;
+  z-index: 99;
+}
+
+
+#pttr-list {
+  position: fixed;
+  left: 10%;
+  right: 10%;
+  top: 10%;
+  bottom: 10%;
+  background-color: rgba(100, 100, 100, 0.8);
+  z-index: 99;
+}
+
+.pttr-list-show {
+}
+
+.pttr-list-hide {
+  display: none;
+}

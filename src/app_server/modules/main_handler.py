@@ -65,4 +65,9 @@ class EchoMainHandler(object):
         pass
 
     def handle_json(self, json_obj):
-        return json_obj
+        ret = {
+            Token.POSITIVE: [json_obj[Token.URL]],
+            Token.NEGATIVE: [json_obj[Token.URL]],
+            Token.NEUTRAL: [json_obj[Token.URL]]
+        }
+        return ret

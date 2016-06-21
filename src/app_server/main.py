@@ -3,12 +3,18 @@
 import argparse
 from http.server import HTTPServer
 import logging
+import os
+import ssl
 import sys
 
 import modules.article_analysis
 import modules.http_request_handler
 import modules.main_handler
 import modules.miner
+
+
+PREFIX_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../..')
+SHARE_PATH = os.path.join(PREFIX_PATH, 'share/app_server')
 
 
 def main():
@@ -62,6 +68,14 @@ def main():
             return modules.http_request_handler.HTTPRequestHandler(
                     h, logger.getChild('HTTPRequestHandler'), *args, **kwargs)
         s = HTTPServer((opts.server_addr, opts.server_port), handler)
+
+        s.socket = ssl.wrap_socket(
+                s.socket,
+                keyfile=os.path.join(SHARE_PATH, 'key.pem'),
+                certfile=os.path.join(SHARE_PATH,'cert.pem'),
+                server_side=True)
+
+        logger.info('Starts the server.')
 
         s.serve_forever()
     except Exception as e:

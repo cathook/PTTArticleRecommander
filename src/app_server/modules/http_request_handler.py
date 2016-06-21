@@ -20,11 +20,13 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             logger: The logger.
         '''
         self._real_handler = real_handler
+        self._logger = logger
         super(HTTPRequestHandler, self).__init__(*args, **kwargs)
 
     def do_POST(self):
         if self.path != '/' or \
                 self.headers['content-type'] != 'application/json':
+            self._logger.warning('Bad url path or content-type.')
             self.send_response(400)
             return
         length = int(self.headers['content-length'])
@@ -32,11 +34,13 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
         try:
             obj = json.loads(data)
         except Exception as e:
+            self._logger.warning('Cannot load json request.')
             self.send_response(400)
             return
         try:
             ret = self._real_handler.handle_json(obj)
         except main_handler.MainHandlerError as e:
+            self._logger.warning('Cannot handle json request.')
             self.send_response(400)
             return
         data = json.dumps(ret)

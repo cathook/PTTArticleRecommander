@@ -1,0 +1,34 @@
+{
+  "manifest_version": 2,
+
+  "name": "PTT Article Recommander",
+  "description": "TODO(?): Fill it.",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_popup": "popup/main.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.ptt.cc/*"],
+      "js": [
+        "inject/common.js",
+        "inject/event_object.js",
+        "inject/model.js",
+        "inject/controller.js",
+        "inject/view.js",
+        "inject/main.js"
+      ],
+      "css": ["inject/view.css"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    "inject/view.html"
+  ],
+
+  "permissions": [
+    "https://<TEMPLATE_SERVER_ADDR>/"
+  ]
+}
