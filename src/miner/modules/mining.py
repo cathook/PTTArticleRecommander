@@ -282,13 +282,13 @@ class BBSCrawler(object):
 
                     os.chdir(self.fetch_path)
                     # delay for a little while in fear of getting blocked
-                    time.sleep(0.1)
+                    #time.sleep(0.1)
                     # json.dump({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime}, metaDataFp, indent=7, ensure_ascii=False)
                     self.arr.append({'Id':metaID,'Name':metaName, 'Push':metaPush, 'Author':metaAuthor, 'Board':metaBoard, 'Title':metaTitle,'Time':metaTime})
                     ID = ID + 1
             json.dump(self.arr, metaDataFp, indent=7, ensure_ascii=False)
             metaDataFp.close()
-            time.sleep(0.2)
+            #time.sleep(0.2)
 
             
         ## dump the number of pushes mapping to the file 'num_pushes_json'

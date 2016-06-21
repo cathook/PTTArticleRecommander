@@ -4,6 +4,7 @@
 
 #include "impl_/empty_analyst.h"
 
+#include "impl_/tf_idf_analyst.h"
 
 using std::string;
 
@@ -18,6 +19,9 @@ IAnalyst* CreateAnalyst(Options const& options,
 
   if (impl_type == "empty") {
     return new impl_::EmptyAnalyst();
+  }
+  else if (impl_type == "tf_idf") {
+    return new impl_::TfIdfAnalyst(miner);
   }
   
   logging::Logger* logger = parent_logger->CreateSubLogger("AnalystCreater");

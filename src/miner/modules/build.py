@@ -11,7 +11,7 @@ class BuildData(object):
 		#global metadata
 		self.metadata = []
 		self.metadatapath = str+"/Metadata_json"
-		
+		self.str = str	
 		self.d = {}
 		# To add a key->value pair, do this:
 		
@@ -95,10 +95,11 @@ class BuildData(object):
 		return ansList
 
 	def get_doc_real_data(self, board, idid):
+		idid = idid+1
 		for i in range(0,len(self.jsondata)):
 			if self.jsondata[i]['Board'] == board and self.jsondata[i]['Id'] == idid :
 				#'http://www.ptt.cc/bbs/' + board + self.jsondata[i]['Name'] + '.html'
-				with open(self.jsondata[i]['Name'],'r') as fileFp:
+				with open(self.str+'/'+self.jsondata[i]['Name'],'r') as fileFp:
 					strr = fileFp.read()
 					s = '發信站: 批踢踢實業坊(ptt.cc)'
 					List = strr[strr.find(s)+len(s):].split('\n')  # --> ['Line 1', 'Line 2', 'Line 3']
