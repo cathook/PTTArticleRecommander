@@ -31,15 +31,15 @@ class BBSCrawler(object):
         ## debug flag to enable debug - not finished yet.
         self.debugFlag = debugFlag
         self.board_name = board_name
-        
-        ## put the cookie header for the board like Gossiping to pass around the limit of 18 age 
+
+        ## put the cookie header for the board like Gossiping to pass around the limit of 18 age
         if self.board_name == 'Gossiping':
             self.initHeader()
             self.useHeader = True
-        
+
         self.myPageNum = myPageNum
-        
-        ## if forAll is on, iterate the total number of pages for the board by getAllPagesInTheBoard()    
+
+        ## if forAll is on, iterate the total number of pages for the board by getAllPagesInTheBoard()
         self.forAll = forAll
         self.toNum = toNum
         self.fetch_path = fetch_path
@@ -56,14 +56,14 @@ class BBSCrawler(object):
         os.chdir(self.path)
         sys.stderr.write('Crawling "%s" ...\n' % self.board_name)
         self.logger.info('Crawling "%s" ...\n' % self.board_name)
-        
-        
-    ## for over 18 content, need to put the header 
-    def initHeader(self): 
+
+
+    ## for over 18 content, need to put the header
+    def initHeader(self):
         self.headers = dict()
         self.headers['Cookie'] = str('over18=1; __utma=156441338.1052450315.1398943535.1398943535.1398943535.1; __utmb=156441338.2.10.1398943535; __utmc=156441338; __utmz=156441338.1398943535.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)' )
-        
-        
+
+
     def initLogging(self):
         '''
         initializing logging function and put to /bbsCrawler.log
@@ -72,7 +72,7 @@ class BBSCrawler(object):
         myLogPath = os.path.join(self.path, LOGNAME)
         try:
             os.makedirs(myLogPath)
-        except: 
+        except:
             sys.stderr.write('Warning: "%s" already existed\n' % myLogPath)
         LOGPATH = myLogPath + '/bbsCrawler.log'
         #logger.warn('Warning: "%s" already existed\n' % myLogPath)
@@ -81,21 +81,21 @@ class BBSCrawler(object):
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         hdlr = logging.FileHandler(LOGPATH)
         hdlr.setFormatter(formatter)
-        self.logger.addHandler(hdlr) 
+        self.logger.addHandler(hdlr)
         #logger.setLevel(logging.DEBUG)
         self.logger.info('bbs crawler started')
-    
+
     def remove_html_tags(self, data):
         p = re.compile(r'<.*?>')
         return p.sub('', data)
-    
+
     def closeLogging(self):
         self.logger.info('closing logging')
         handlers = self.logger.handlers[:]
         for handler in handlers:
             handler.close()
             self.logger.removeHandler(handler)
-    
+
     def getAllPagesInTheBoard(self):
         self.logger.info('getting all pages number from "%s" ...\n' % self.board_name)
         try:
@@ -108,29 +108,29 @@ class BBSCrawler(object):
             self.allPageNums = int(re.sub(r'[^0-9]+', '', indexPage.find_all("a", class_="btn wide")[1].get('href')))
             sys.stderr.write('Total number of pages: %d\n' % self.allPageNums)
             self.logger.error('Total number of pages: %d\n' % self.allPageNums)
-            global globvar    
+            global globvar
             globvar = self.allPageNums
         except:
             sys.stderr.write('can not get the number of pages')
             self.logger.error('cannot get the number of pages \n')
-    
+
     def getContent(self):
         start_time = time.time()
-        
-        if (not self.forAll): 
-            ##use self.myPageNum for designate page 
+
+        if (not self.forAll):
+            ##use self.myPageNum for designate page
             pagesToRun = self.myPageNum
         else:
             ##use all number got from getAllPagesInTheBoard()
             pagesToRun = self.allPageNums
-        
+
         if (self.toNum != 0 and not self.forAll): ## to suport 2 arguments start 3 -> 100
             startIndex = pagesToRun
             endIndex = self.toNum
         else:
             startIndex = 1
             endIndex = pagesToRun
-        
+
 
         ## add the index to record the total number that has processed, the number of failure and the number of success
         self.statisticDic['indexFailure'] = 0
@@ -140,13 +140,13 @@ class BBSCrawler(object):
         ID = 1
         self.arr = []
         with open('Metadata_json','w+') as metaDataFp:
-            ## iterate through index page like "www.ptt.cc/bbs/car/index.html" to get each POST ID  
+            ## iterate through index page like "www.ptt.cc/bbs/car/index.html" to get each POST ID
             #for indexP in xrange(1, pagesToRun + 1):
             for indexP in range(startIndex, endIndex):
                 sys.stderr.write('start from index %s ...\n' % indexP)
                 self.logger.debug('start from index %s ...\n' % indexP)
                 try:
-                    if (self.useHeader): ## if the page require header 
+                    if (self.useHeader): ## if the page require header
                         request = urllib2.Request(self.page_url(indexP), headers=self.headers)
                         page = bs4.BeautifulSoup(urllib2.urlopen(request).read(), "lxml")
                     else:
@@ -154,14 +154,14 @@ class BBSCrawler(object):
                 except:
                     sys.stderr.write('Error occured while fetching %s\n' % self.page_url(indexP))
                     self.logger.error('Error occured while fetching %s\n' % self.page_url(indexP))
-                    ## how many index has failed 
+                    ## how many index has failed
                     self.statisticDic['indexFailure'] += 1
                     continue
-                
+
                 ## iterate through posts on this page
                 for link in page.find_all(class_='r-ent'):
-                    
-                    try: 
+
+                    try:
                         ## For instance: "M.1368632629.A.AF7"
                         post_id = link.a.get('href').split('/')[-1][:-5]
                         """
@@ -191,7 +191,7 @@ class BBSCrawler(object):
                                 self.num_pushes[post_id] = -100
                             else:
                                 self.num_pushes[post_id] = int(link.span.contents[0])
-                        ## if can't find push, set 0 push 
+                        ## if can't find push, set 0 push
                         else:
                             self.num_pushes[post_id] = 0
                         """
@@ -199,14 +199,14 @@ class BBSCrawler(object):
                         sys.stderr.write('Error occured while fetching2 %s\n' % post_id)
                         self.logger.error('Error occured while fetching %s\n' % post_id)
                         continue
-                    
-                    ## Fetch the post content via post id, ex. http://www.ptt.cc/bbs/car/M.1400136465.A.DD5.html     
+
+                    ## Fetch the post content via post id, ex. http://www.ptt.cc/bbs/car/M.1400136465.A.DD5.html
                     self.statisticDic['totalPostNum'] += 1
                     try:
-                                                
+
                         sys.stderr.write('Fetching %s ...\n' % post_id)
                         self.logger.info('Fetching %s ...\n' % post_id)
-                        if (self.useHeader): ## if the page require header 
+                        if (self.useHeader): ## if the page require header
                             request = urllib2.Request(self.post_url(post_id), headers=self.headers)
                             post = bs4.BeautifulSoup(urllib2.urlopen(request).read(), "lxml")
                         else:
@@ -217,7 +217,7 @@ class BBSCrawler(object):
                         ##self.fetchFailureNum += 1
                         self.statisticDic['fetchFailureNum'] += 1
                         continue
-        
+
                     with open(post_id, 'w') as contentFile_fp:
                         try:
                             strr = self.remove_html_tags(str(post.find(id='main-container')))
@@ -228,7 +228,7 @@ class BBSCrawler(object):
                             arrow = 0
                             LikeChinese = '推'
                             DislikeChinese = '噓'
-                            ArrowChinese = '→'  
+                            ArrowChinese = '→'
                             for replyString in List:
                                 if len(replyString) != 0:
                                     if replyString[0] == LikeChinese :
@@ -237,7 +237,7 @@ class BBSCrawler(object):
                                         arrow = arrow + 1
                                     elif replyString[0] == DislikeChinese:
                                         dislike = dislike + 1
-                            #print([like,arrow,dislike])        
+                            #print([like,arrow,dislike])
                             #if s in strr:
                                 #contentFile_fp.write(strr[0:strr.find(s)-5])
                             #else:
@@ -246,7 +246,7 @@ class BBSCrawler(object):
                             #contentFile_fp.write(strr)
                             contentFile_fp.write('\n')
                             #contentFile_fp.write(self.remove_html_tags(str(post.find(id='main-container'))))
-                            
+
                             spans = post.find_all('span', {'class' : 'article-meta-value'})
                             count = 1
                             #self.num_pushes[post_id] = int(link.span.contents[0])
@@ -261,12 +261,12 @@ class BBSCrawler(object):
                                     metaAuthor = span.string[0:span.string.find('(')-1]
                                 if count == 2:
                                     metaBoard = span.string
-                                if count == 3:                                    
+                                if count == 3:
                                     if span.string.find("Re:") == -1:
                                         metaTitle = span.string
                                     else:
                                         metaTitle = span.string[4:]
-                                if count == 4:                          
+                                if count == 4:
                                     date_object = datetime.strptime(span.string[4:], '%b %d %H:%M:%S %Y')
                                     #contentFile_fp.write(str(date_object) + '\n') ## write title in a first line
                                     metaTime = str(date_object)
@@ -290,7 +290,7 @@ class BBSCrawler(object):
             metaDataFp.close()
             #time.sleep(0.2)
 
-            
+
         ## dump the number of pushes mapping to the file 'num_pushes_json'
         """
         with open('num_pushes_json', 'w') as numPushesFp, open('metadata_dic_json', 'w') as metadataDicFp:
@@ -302,8 +302,8 @@ class BBSCrawler(object):
             numPushesFp.close()
             metadataDicFp.close()
         """
-            
-        ## do the final logging and printing all numbers     
+
+        ## do the final logging and printing all numbers
         self.logger.info('Ending crawling "%s" ... !! \n' % self.board_name)
         self.logger.info('\n')
         self.logger.info('Statistic: \n')
@@ -319,7 +319,7 @@ class BBSCrawler(object):
         print ("the dir is: %s" %os.listdir(os.getcwd()))
         print ("the total post num: %s" % self.statisticDic['totalPostNum'])
         print ("elapsed time: %s" % elapsed_time)
-        
+
 
 class MultipleOption(Option):
     ACTIONS = Option.ACTIONS + ("extend",)
@@ -331,4 +331,4 @@ class MultipleOption(Option):
         if action == "extend":
             values.ensure_value(dest, []).append(value)
         else:
-            Option.take_action(self, action, dest, opt, value, values, parser)   
+            Option.take_action(self, action, dest, opt, value, values, parser)
