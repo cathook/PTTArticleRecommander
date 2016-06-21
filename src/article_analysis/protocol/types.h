@@ -37,7 +37,7 @@ typedef std::string User;
 /**
  * Type of the document's content string.
  */
-typedef std::wstring Content;
+typedef std::string Content;
 
 
 /**

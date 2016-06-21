@@ -37,7 +37,7 @@ TEST(ReplyMessage, Load) {
   EXPECT_EQ(offs, s.length());
   EXPECT_EQ(rm.mode, protocol::types::ReplyMode::NORMAL);
   EXPECT_EQ(rm.user, "abc");
-  EXPECT_EQ(rm.message, L"ab");
+  EXPECT_EQ(rm.message, "ab");
 }
 
 
@@ -81,11 +81,11 @@ TEST(DocRealData, Load) {
   bool ret = dd.Load(s, &offs);
   EXPECT_TRUE(ret);
   EXPECT_EQ(offs, s.length());
-  EXPECT_EQ(dd.content, L"1234567");
+  EXPECT_EQ(dd.content, "1234567");
   ASSERT_EQ(dd.reply_messages.size(), 1u);
   EXPECT_EQ(dd.reply_messages[0].mode, protocol::types::ReplyMode::NORMAL);
   EXPECT_EQ(dd.reply_messages[0].user, "abc");
-  EXPECT_EQ(dd.reply_messages[0].message, L"ab");
+  EXPECT_EQ(dd.reply_messages[0].message, "ab");
 }
 
 }  // namespace

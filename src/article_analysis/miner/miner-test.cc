@@ -152,7 +152,7 @@ class FakeServer {
     if (!RecvObj_(ph.size, &b, &i)) return 1;
 
     DocRealData drd;
-    drd.content = L"meow";
+    drd.content = "meow";
 
     if (!SendObj_(PackageType::REPLY_DOC_REAL_DATA, drd)) return 1;
 
@@ -352,7 +352,7 @@ TEST_F(MinerTestFixture, All) {
 
   {
     auto d = miner->GetDocRealData("haha", 514);
-    EXPECT_EQ(d.content, L"meow");
+    EXPECT_EQ(d.content, "meow");
     EXPECT_EQ(d.reply_messages.size(), 0u);
     printf("done6\n");
   }
