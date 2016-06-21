@@ -1,8 +1,8 @@
 #include <map>
 
 #include "opencc/opencc.h"
-#include "../../../../deps/cppjieba/include/cppjieba/Jieba.hpp"
-#include "../../../../deps/cppjieba/include/cppjieba/KeywordExtractor.hpp"
+#include "cppjieba/Jieba.hpp"
+#include "cppjieba/KeywordExtractor.hpp"
 #include "tf_idf_analyst.h"
 #include "protocol/types.h"
 #include "protocol/types.h"
@@ -16,7 +16,7 @@ using protocol::types::ReplyMessages;
 using protocol::types::ReplyMessage;
 using protocol::types::ReplyMode;
 
-#define k 2.0
+#define k 1.5
 #define b 0.75
 
 const char* const DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/jieba.dict.utf8";
