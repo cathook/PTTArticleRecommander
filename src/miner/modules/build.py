@@ -18,13 +18,9 @@ class BuildData(object):
         with open(self.metadatapath) as data_file:
             self.jsondata = json.load(data_file)
         os.chdir(str)
-        #pprint(self.jsondata)
 
         for i in range(0,len(self.jsondata)):
-
-
             Rstr = self.jsondata[i]['Title']
-
             if Rstr in self.d :
                 Rid = self.d[Rstr][0]
                 # has some values for key
@@ -32,24 +28,18 @@ class BuildData(object):
                 Rid = self.jsondata[i]['Id']
                 # no values for key
             self.d.setdefault(Rstr, []).append(self.jsondata[i]['Id'])
-            """
-            if Rstr in self.mapdata:
-                Rid = self.mapdata[Rstr]
-                self.mapdata[Rstr].append(self.jsondata[i]['Id'])
-            else:
-                self.mapdata[Rstr] = self.jsondata[i]['Id']
-                Rid = self.jsondata[i]['Id']
-            """
             #print(self.jsondata[i]['Title'])
             #print(Rid)
-            self.metadata.append(
-                            DocMetaData(self.jsondata[i]['Id'],Rid,
-                                      self.jsondata[i]['Title'],self.jsondata[i]['Author'],
-                                      self.jsondata[i]['Time'],self.jsondata[i]['Board'],
-                                      [self.jsondata[i]['Push'][0],self.jsondata[i]['Push'][1],self.jsondata[i]['Push'][2]])
-                            )
-            #print(jsondata[i]['Title'])
-        #pass
+            self.metadata.append(DocMetaData(
+                self.jsondata[i]['Id'], Rid,
+                self.jsondata[i]['Title'], self.jsondata[i]['Author'],
+                self.jsondata[i]['Time'], self.jsondata[i]['Board'],
+                [
+                    self.jsondata[i]['Push'][0],
+                    self.jsondata[i]['Push'][1],
+                    self.jsondata[i]['Push'][2]
+                ]))
+
     def get_max_id(self, board):
         cnt = 0
         for i in range(0,len(self.jsondata)):
@@ -66,8 +56,6 @@ class BuildData(object):
 
     def get_doc_meta_data_after_time(self, board, post_time):
         ansList = []
-        #return ansList
-        #   2005-06-21 19:34:53
         for i in range(0,len(self.jsondata)):
             date_object = datetime.strptime(self.jsondata[i]['Time'],'%Y-%m-%d %H:%M:%S')
             if self.jsondata[i]['Board'] == board and post_time > date_object :
@@ -76,8 +64,6 @@ class BuildData(object):
 
     def get_doc_meta_data_of_author(self, board, author):
         ansList = []
-        #return ansList
-        #   2005-06-21 19:34:53
         for i in range(0,len(self.jsondata)):
             if self.jsondata[i]['Board'] == board and self.jsondata[i]['Author'] == author :
                 ansList.append(self.metadata[i])
@@ -87,10 +73,8 @@ class BuildData(object):
         ansList = []
         for i in range(0,len(self.jsondata)):
             if self.jsondata[i]['Board'] == board and self.jsondata[i]['Id'] == idid :
-                #for Rid in self.mapdata[Rstr]:
                 if self.jsondata[i]['Title'] in self.d :
                     for X in self.d[self.jsondata[i]['Title']]:
-                        #print(X)
                         ansList.append(self.metadata[X])
         return ansList
 
@@ -98,7 +82,6 @@ class BuildData(object):
         idid = idid+1
         for i in range(0,len(self.jsondata)):
             if self.jsondata[i]['Board'] == board and self.jsondata[i]['Id'] == idid :
-                #'http://www.ptt.cc/bbs/' + board + self.jsondata[i]['Name'] + '.html'
                 with open(self.str+'/'+self.jsondata[i]['Name'],'r') as fileFp:
                     strr = fileFp.read()
                     s = '發信站: 批踢踢實業坊(ptt.cc)'
@@ -107,11 +90,10 @@ class BuildData(object):
                     LikeChinese = '推'
                     DislikeChinese = '噓'
                     ArrowChinese = '→'
-                    #   ReplyMessage(self, mode, user, message):
                     for replyString in List:
                         if len(replyString) != 0:
                             if replyString[0] == LikeChinese :
-                                Reply.append(ReplyMessage(ReplyMode.GOOD,replyString[2:replyString.find(':')],replyString[replyString.find(':')+1:]))
+                                Reply.append(ReplyMessage(ReplyMode.GOOD, replyString[2:replyString.find(':')], replyString[replyString.find(':') + 1 : ]))
                             elif replyString[0] == ArrowChinese:
                                 Reply.append(ReplyMessage(ReplyMode.NORMAL,replyString[2:replyString.find(':')],replyString[replyString.find(':')+1:]))
                             elif replyString[0] == DislikeChinese:
@@ -128,4 +110,3 @@ class BuildData(object):
         for i in range(0,len(self.jsondata)):
             if self.jsondata[i]['Board'] == board and self.jsondata[i]['Id'] == idid :
                 return 'http://www.ptt.cc/bbs/' + board + self.jsondata[i]['Name'] + '.html'
-
