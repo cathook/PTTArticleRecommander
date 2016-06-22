@@ -1,13 +1,10 @@
-#include "tf_idf_analyst.h"
-
 #include <map>
 
-#include <cppjieba/Jieba.hpp>
-#include <cppjieba/KeywordExtractor.hpp>
-#include <opencc/opencc.h>
-
+#include "opencc/opencc.h"
+#include "cppjieba/Jieba.hpp"
+#include "cppjieba/KeywordExtractor.hpp"
+#include "tf_idf_analyst_title.h"
 #include "protocol/types.h"
-#include "utils/funcs.h"
 
 using namespace std;
 using protocol::types::Board;
@@ -22,17 +19,17 @@ using protocol::types::ReplyMode;
 #define k 1.5
 #define b 0.75
 
-const char* const DICT_PATH = "/share/dict/jieba.dict.utf8";
-const char* const HMM_PATH = "/share/dict/hmm_model.utf8";
-const char* const USER_DICT_PATH = "/share/dict/user.dict.utf8";
-const char* const IDF_PATH = "/share/dict/idf.utf8";
-const char* const STOP_WORD_PATH = "/share/dict/stop_words.utf8";
+const char* const DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/jieba.dict.utf8";
+const char* const HMM_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/hmm_model.utf8";
+const char* const USER_DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/user.dict.utf8";
+const char* const IDF_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/idf.utf8";
+const char* const STOP_WORD_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/stop_words.utf8";
 
 namespace analyst {
 
 namespace impl_ {
 
-TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
+TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 	int noun_num = 0, final_noun_num = 0, file_count = 0, file_calculated_num = 0;
 	vector<int> noun_count;
 	vector<int> final_noun_count;
@@ -40,13 +37,8 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 	map<string, int> word_map;
 	map<string, int> final_word_map;
 	map<string, int>::iterator word_it;
-	cppjieba::Jieba jieba(utils::GetPackageRoot() + DICT_PATH,
-			      utils::GetPackageRoot() + HMM_PATH,
-			      utils::GetPackageRoot() + USER_DICT_PATH);
-	cppjieba::KeywordExtractor extractor(jieba,
-					utils::GetPackageRoot() + IDF_PATH,
-					utils::GetPackageRoot() + STOP_WORD_PATH);
-	const size_t topk = 10;
+	cppjieba::Jieba jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH);
+	cppjieba::KeywordExtractor extractor(jieba, IDF_PATH, STOP_WORD_PATH);
 	opencc::SimpleConverter my_opencc("tw2sp.json");
 	Board board_name = "Gossiping";
 	Identity max_id;
@@ -59,30 +51,20 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 	vector<bool> IDF_add;
 	fprintf(stderr, "read first time\n");
 	vector<DocMetaData> meta_data;
+	meta_data = miner->GetDocMetaDataAfterId(board_name, 0);
 
-	for (Identity id = 0; id < max_id; id ++){
-		meta_data = miner->GetDocMetaDataAfterId(board_name, id + 1);
-		opinion = meta_data[0].num_reply_rows[0] - meta_data[0].num_reply_rows[2];
+	for (Identity id = 0; id <= max_id; id ++){
+		
+		opinion = meta_data[id].num_reply_rows[(int)ReplyMode::GOOD] - meta_data[id].num_reply_rows[(int)ReplyMode::WOO];
 		fflush(stdout);
 		if(opinion > 0){
 			for(unsigned i = 0; i < IDF_add.size(); i ++)
 				IDF_add[i] = false;
-
-			string final = "";
-			for(unsigned i = 0; i < meta_data[0].title.length(); i ++){
-				if(meta_data[0].title[i] == ':'){
-					final += meta_data[0].title[i];
-				}
-				else{
-					while(i < meta_data[0].title.length() && meta_data[0].title[i] != '\n')
-						i ++;
-				}
-			}
-			meta_data[0].title = my_opencc.Convert(meta_data[0].title);
+			meta_data[id].title = my_opencc.Convert(meta_data[id].title);
 			
 			//n words
 			//vector<pair<string, string> > tagres;
-			//jieba.Tag(doc_real_data.content, tagres);
+			//jieba.Tag(meta_data[id].title, tagres);
 			//for(vector<pair<string, string> >::iterator it = tagres.begin(); it != tagres.end(); it++){
 				//if(it->second == "n"){
 			 		//word_it = word_map.find(it->first);
@@ -103,7 +85,7 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 
 			//keywords
 			//vector<cppjieba::KeywordExtractor::Word> keywordres;
-			//extractor.Extract(doc_real_data.content, keywordres, topk);
+			//extractor.Extract(meta_data[id].title, keywordres, topk);
 
 			//for(vector<cppjieba::KeywordExtractor::Word>::iterator it = keywordres.begin(); it != keywordres.end(); it++){
 			 	//word_it = word_map.find(it->word);
@@ -122,46 +104,46 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 			//}
 
 			//cut for search
-			//vector<string> tagres;
-			//jieba.CutForSearch(doc_real_data.content, tagres);
-			//for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
-				//word_it = word_map.find(*it);
-				//if(word_it == word_map.end()){
-					//word_map.insert(pair<string, int>(*it, noun_num));
-					//noun_count.push_back(1);
-					//noun_num ++;
-					//IDF.push_back(0.0);
-					//IDF_add.push_back(true);
-				//}
-				//else{
-					//noun_count[word_it->second] ++;
-					//if(!IDF_add[word_it->second])
-						//IDF_add[word_it->second] = true;
-				//}
-			//}
-
-			//cut all
 			vector<string> tagres;
-			jieba.CutAll(meta_data[0].title, tagres);
+			jieba.CutForSearch(meta_data[id].title, tagres);
 			for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
-			 	word_it = word_map.find(*it);
-			 	if(word_it == word_map.end()){
-			 		word_map.insert(pair<string, int>(*it, noun_num));
-			 		noun_count.push_back(1);
-			 		noun_num ++;
+				word_it = word_map.find(*it);
+				if(word_it == word_map.end()){
+					word_map.insert(pair<string, int>(*it, noun_num));
+					noun_count.push_back(1);
+					noun_num ++;
 					IDF.push_back(0.0);
 					IDF_add.push_back(true);
-			 	}
-			 	else{
-			 		noun_count[word_it->second] ++;
+				}
+				else{
+					noun_count[word_it->second] ++;
 					if(!IDF_add[word_it->second])
 						IDF_add[word_it->second] = true;
-			 	}
+				}
 			}
 
+			//cut all
+			// vector<string> tagres;
+			// jieba.CutAll(meta_data[id].title, tagres);
+			// for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
+			//  	word_it = word_map.find(*it);
+			//  	if(word_it == word_map.end()){
+			//  		word_map.insert(pair<string, int>(*it, noun_num));
+			//  		noun_count.push_back(1);
+			//  		noun_num ++;
+			// 		IDF.push_back(0.0);
+			// 		IDF_add.push_back(true);
+			//  	}
+			//  	else{
+			//  		noun_count[word_it->second] ++;
+			// 		if(!IDF_add[word_it->second])
+			// 			IDF_add[word_it->second] = true;
+			//  	}
+			// }
 
-			doc_len.push_back(meta_data[0].title.length());
-			article_content_vec.push_back(meta_data[0].title);
+
+			doc_len.push_back(meta_data[id].title.length());
+			article_content_vec.push_back(meta_data[id].title);
 			file_calculated.push_back(true);
 			file_calculated_num ++;
 
@@ -176,132 +158,6 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 		}
 		file_count ++;
 	}
-
-	// for (Identity id = 0; id < max_id; id ++){
-
-	// 	doc_real_data = miner->GetDocRealData(board_name, id);
-		
-	// 	opinion = 0;
-	// 	for(vector<ReplyMessage>::iterator message_it = doc_real_data.reply_messages.begin(); 
-	// 		message_it != doc_real_data.reply_messages.end(); message_it ++){
-	// 		if(message_it->mode == ReplyMode::GOOD)
-	// 			opinion ++;
-	// 		else if(message_it->mode == ReplyMode::WOO)
-	// 			opinion --;
-	// 	}
-
-	// 	if(opinion > 0){
-	// 		for(unsigned i = 0; i < IDF_add.size(); i ++)
-	// 			IDF_add[i] = false;
-
-	// 		string final = "";
-	// 		for(unsigned i = 0; i < doc_real_data.content.length(); i ++){
-	// 			if(doc_real_data.content[i] == ':'){
-	// 				final += doc_real_data.content[i];
-	// 			}
-	// 			else{
-	// 				while(i < doc_real_data.content.length() && doc_real_data.content[i] != '\n')
-	// 					i ++;
-	// 			}
-	// 		}
-	// 		doc_real_data.content = my_opencc.Convert(final);
-			
-	// 		//n words
-	// 		//vector<pair<string, string> > tagres;
-	// 		//jieba.Tag(doc_real_data.content, tagres);
-	// 		//for(vector<pair<string, string> >::iterator it = tagres.begin(); it != tagres.end(); it++){
-	// 			//if(it->second == "n"){
-	// 		 		//word_it = word_map.find(it->first);
-	// 		 		//if(word_it == word_map.end()){
-	// 		 			//word_map.insert(pair<string, int>(it->first, noun_num));
-	// 		 			//noun_count.push_back(1);
-	// 		 			//noun_num ++;
-	// 					//IDF.push_back(0.0);
-	// 					//IDF_add.push_back(true);
-	// 		 		//}
-	// 		 		//else{
-	// 		 			//noun_count[word_it->second] ++;
-	// 					//if(!IDF_add[word_it->second])
-	// 						//IDF_add[word_it->second] = true;
-	// 		 		//}
-	// 		 	//}
-	// 		 //}
-
-	// 		//keywords
-	// 		//vector<cppjieba::KeywordExtractor::Word> keywordres;
-	// 		//extractor.Extract(doc_real_data.content, keywordres, topk);
-
-	// 		//for(vector<cppjieba::KeywordExtractor::Word>::iterator it = keywordres.begin(); it != keywordres.end(); it++){
-	// 		 	//word_it = word_map.find(it->word);
-	// 		 	//if(word_it == word_map.end()){
-	// 		 		//word_map.insert(pair<string, int>(it->word, noun_num));
-	// 		 		//noun_count.push_back(1);
-	// 		 		//noun_num ++;
-	// 				//IDF.push_back(0.0);
-	// 				//IDF_add.push_back(true);
-	// 		 	//}
-	// 		 	//else{
-	// 		 		//noun_count[word_it->second] ++;
-	// 				//if(!IDF_add[word_it->second])
-	// 					//IDF_add[word_it->second] = true;
-	// 		 	//}
-	// 		//}
-
-	// 		//cut for search
-	// 		//vector<string> tagres;
-	// 		//jieba.CutForSearch(doc_real_data.content, tagres);
-	// 		//for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
-	// 			//word_it = word_map.find(*it);
-	// 			//if(word_it == word_map.end()){
-	// 				//word_map.insert(pair<string, int>(*it, noun_num));
-	// 				//noun_count.push_back(1);
-	// 				//noun_num ++;
-	// 				//IDF.push_back(0.0);
-	// 				//IDF_add.push_back(true);
-	// 			//}
-	// 			//else{
-	// 				//noun_count[word_it->second] ++;
-	// 				//if(!IDF_add[word_it->second])
-	// 					//IDF_add[word_it->second] = true;
-	// 			//}
-	// 		//}
-
-	// 		//cut all
-	// 		vector<string> tagres;
-	// 		jieba.CutAll(doc_real_data.content, tagres);
-	// 		for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
-	// 		 	word_it = word_map.find(*it);
-	// 		 	if(word_it == word_map.end()){
-	// 		 		word_map.insert(pair<string, int>(*it, noun_num));
-	// 		 		noun_count.push_back(1);
-	// 		 		noun_num ++;
-	// 				IDF.push_back(0.0);
-	// 				IDF_add.push_back(true);
-	// 		 	}
-	// 		 	else{
-	// 		 		noun_count[word_it->second] ++;
-	// 				if(!IDF_add[word_it->second])
-	// 					IDF_add[word_it->second] = true;
-	// 		 	}
-	// 		}
-
-
-	// 		doc_len.push_back(doc_real_data.content.length());
-	// 		article_content_vec.push_back(doc_real_data.content);
-	// 		file_calculated.push_back(true);
-	// 		file_calculated_num ++;
-
-	// 		for(unsigned i = 0; i < IDF_add.size(); i ++)
-	// 			if(IDF_add[i])
-	// 				IDF[i] += 1.0;
-	// 	}
-	// 	else{
-	// 		doc_len.push_back(0);
-	// 		article_content_vec.push_back("");
-	// 		file_calculated.push_back(false);
-	// 	}
-	// 	file_count ++;
-	// }
 
 	fprintf(stderr, "read second time\n");
 	int threshold = (int)(file_calculated_num * 0.001);
@@ -363,26 +219,26 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 		//}
 
 		// cut for search
-		//vector<string> tagres;
-		//jieba.CutForSearch(article_content_vec[sz], tagres);
-		//for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
-			//word_it = final_word_map.find(*it);
-			//if(word_it != final_word_map.end()){
-				//file_word[sz][word_it->second] ++;
-				//temp_count[word_it->second] ++;
-			//}
-		//}
-
-		// cut all
 		vector<string> tagres;
-		jieba.CutAll(article_content_vec[sz], tagres);
+		jieba.CutForSearch(article_content_vec[sz], tagres);
 		for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
 			word_it = final_word_map.find(*it);
-		 	if(word_it != final_word_map.end()){
-		 		file_word[sz][word_it->second] ++;
-		 		temp_count[word_it->second] ++;
-		 	}
+			if(word_it != final_word_map.end()){
+				file_word[sz][word_it->second] ++;
+				temp_count[word_it->second] ++;
+			}
 		}
+
+		// cut all
+		// vector<string> tagres;
+		// jieba.CutAll(article_content_vec[sz], tagres);
+		// for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
+		// 	word_it = final_word_map.find(*it);
+		//  	if(word_it != final_word_map.end()){
+		//  		file_word[sz][word_it->second] ++;
+		//  		temp_count[word_it->second] ++;
+		//  	}
+		// }
 
 		for(int i = 0; i < final_noun_num; i ++){
 			if(temp_count[i] > max_noun_count[i])
@@ -466,7 +322,7 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 			fprintf(stderr, "%d\n", l+1);
 	}
 }
-DocRelInfo TfIdfAnalyst::GetDocRelInfo(DocIdentity const& id) const{
+DocRelInfo TfIdfAnalystTitle::GetDocRelInfo(DocIdentity const& id) const{
 	vector<DocIdentity> relavant;
 	DocIdentity temp;
 	if(file_calculated[id.id - 1]){

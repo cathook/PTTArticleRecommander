@@ -59,7 +59,7 @@ TEST(DocMetaData, Load) {
   EXPECT_EQ(offs, s.length());
   EXPECT_EQ(dm.id, 2);
   EXPECT_EQ(dm.prev_id, 1);
-  EXPECT_EQ(dm.title, L"abcdmeow");
+  EXPECT_EQ(dm.title, "abcdmeow");
   EXPECT_EQ(dm.author, "xyz");
   EXPECT_EQ(dm.post_time, 4);
   EXPECT_EQ(dm.board, "12345");

@@ -170,7 +170,7 @@ class FakeServer {
     xx[1] = 2;
     xx[2] = 3;
     for (size_t nn = 0; nn < n; ++nn) {
-      a.emplace_back(3, 3, L"meow", "aaa", 0, b, xx);
+      a.emplace_back(3, 3, "meow", "aaa", 0, b, xx);
     }
     uint32_t t1 = static_cast<uint32_t>(ph.type);
     uint32_t bit = static_cast<uint32_t>(PackageType::REPLY_QUERY_BIT);
@@ -288,7 +288,7 @@ TEST_F(MinerTestFixture, All) {
     for (auto& k : v) {
       EXPECT_EQ(k.id, 3);
       EXPECT_EQ(k.prev_id, 3);
-      EXPECT_EQ(k.title, L"meow");
+      EXPECT_EQ(k.title, "meow");
       EXPECT_EQ(k.author, "aaa");
       EXPECT_EQ(k.post_time, 0);
       EXPECT_EQ(k.board, "board");
@@ -305,7 +305,7 @@ TEST_F(MinerTestFixture, All) {
     for (auto& k : v) {
       EXPECT_EQ(k.id, 3);
       EXPECT_EQ(k.prev_id, 3);
-      EXPECT_EQ(k.title, L"meow");
+      EXPECT_EQ(k.title, "meow");
       EXPECT_EQ(k.author, "aaa");
       EXPECT_EQ(k.post_time, 0);
       EXPECT_EQ(k.board, "board");
@@ -322,7 +322,7 @@ TEST_F(MinerTestFixture, All) {
     for (auto& k : v) {
       EXPECT_EQ(k.id, 3);
       EXPECT_EQ(k.prev_id, 3);
-      EXPECT_EQ(k.title, L"meow");
+      EXPECT_EQ(k.title, "meow");
       EXPECT_EQ(k.author, "aaa");
       EXPECT_EQ(k.post_time, 0);
       EXPECT_EQ(k.board, "bomm");
@@ -339,7 +339,7 @@ TEST_F(MinerTestFixture, All) {
     for (auto& k : v) {
       EXPECT_EQ(k.id, 3);
       EXPECT_EQ(k.prev_id, 3);
-      EXPECT_EQ(k.title, L"meow");
+      EXPECT_EQ(k.title, "meow");
       EXPECT_EQ(k.author, "aaa");
       EXPECT_EQ(k.post_time, 0);
       EXPECT_EQ(k.board, "wwww");

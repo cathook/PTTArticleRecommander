@@ -25,7 +25,7 @@ namespace types {
 /**
  * Type of the document's title string.
  */
-typedef std::wstring DocTitle;
+typedef std::string DocTitle;
 
 
 /**
