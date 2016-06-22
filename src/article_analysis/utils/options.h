@@ -283,14 +283,15 @@ class AOptionCollection : public IOptionBase {
       assert(it != option_collections_.end());
       return it->second->GetOption_<Type>(name, dot_pos + 1);
     }
+    std::string n2 = name.substr(name_start_pos);
 
     if (std::is_base_of<AAnOption, Type>::value) {
-      auto it = an_options_.find(name);
+      auto it = an_options_.find(n2);
       assert(it != an_options_.end());
       return dynamic_cast<Type const*>(it->second.get());
     }
     if (std::is_base_of<AOptionCollection, Type>::value) {
-      auto it = option_collections_.find(name);
+      auto it = option_collections_.find(n2);
       assert(it != option_collections_.end());
       return dynamic_cast<Type const*>(it->second.get());
     }
