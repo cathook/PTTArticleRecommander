@@ -1,11 +1,13 @@
+#include "tf_idf_analyst.h"
+
 #include <map>
 
-#include "opencc/opencc.h"
-#include "cppjieba/Jieba.hpp"
-#include "cppjieba/KeywordExtractor.hpp"
-#include "tf_idf_analyst.h"
+#include <cppjieba/Jieba.hpp>
+#include <cppjieba/KeywordExtractor.hpp>
+#include <opencc/opencc.h>
+
 #include "protocol/types.h"
-#include "protocol/types.h"
+#include "utils/funcs.h"
 
 using namespace std;
 using protocol::types::Board;
@@ -19,9 +21,9 @@ using protocol::types::ReplyMode;
 #define k 1.5
 #define b 0.75
 
-const char* const DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/jieba.dict.utf8";
-const char* const HMM_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/hmm_model.utf8";
-const char* const USER_DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/user.dict.utf8";
+const char* const DICT_PATH = "/share/dict/jieba.dict.utf8";
+const char* const HMM_PATH = "/share/dict/hmm_model.utf8";
+const char* const USER_DICT_PATH = "/share/dict/user.dict.utf8";
 
 namespace analyst {
 
@@ -35,7 +37,9 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 	map<string, int> word_map;
 	map<string, int> final_word_map;
 	map<string, int>::iterator word_it;
-	cppjieba::Jieba jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH);
+	cppjieba::Jieba jieba(utils::GetPackageRoot() + DICT_PATH,
+			      utils::GetPackageRoot() + HMM_PATH,
+			      utils::GetPackageRoot() + USER_DICT_PATH);
 	opencc::SimpleConverter my_opencc("tw2sp.json");
 	Board board_name = "Gossiping";
 	Identity max_id;

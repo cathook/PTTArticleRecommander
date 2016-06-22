@@ -47,3 +47,5 @@ endif()
 
 
 install(TARGETS ${BIN_NAME} DESTINATION bin)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/deps/cppjieba/dict"
+        DESTINATION "share/${BIN_NAME}")

@@ -101,10 +101,14 @@ struct TransformFromStrImpl<std::string> {
 
 }  // namespace funcs_internal_
 
+
 template <typename Type>
 inline Type TransformFromStr(std::string const& s) {
   return funcs_internal_::TransformFromStrImpl<Type>::Transform(s);
 }
+
+
+std::string const& GetPackageRoot();
 
 }  // namespace utils
 
