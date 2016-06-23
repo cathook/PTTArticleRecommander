@@ -86,6 +86,7 @@ class BuildData(object):
 
     def get_doc_meta_data_series(self, board, idid):
         ansList = []
+        idid = idid+1
         for i in range(0,len(self.jsondata)):
             if self.jsondata[i]['Board'] == board and self.jsondata[i]['Id'] == idid :
                 #for Rid in self.mapdata[Rstr]:
@@ -126,6 +127,7 @@ class BuildData(object):
                 return self.jsondata[i]['Id']
 
     def get_url_by_id(self, board, idid):
+        idid = idid + 1
         for i in range(0,len(self.jsondata)):
             if self.jsondata[i]['Board'] == board and self.jsondata[i]['Id'] == idid :
                 return 'http://www.ptt.cc/bbs/' + board + self.jsondata[i]['Name'] + '.html'
