@@ -4,6 +4,8 @@ import re
 import requests
 
 from modules.l2_miner.common import ADocument
+from modules.l2_miner.common import HEADERS
+from modules.l2_miner.storage import CrewerInterface
 from modules.protocol.types import DocMetaData
 from modules.protocol.types import DocRealData
 from modules.protocol.types import NUM_REPLY_MODES
@@ -11,25 +13,13 @@ from modules.protocol.types import ReplyMessage
 from modules.protocol.types import ReplyMode
 
 
-_HEADERS = {
-    'Cookie': str('over18=1; __utma=156441338.1052450315.1398943535.1398943535.1398943535.1; __utmb=156441338.2.10.1398943535; __utmc=156441338; __utmz=156441338.1398943535.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)')
-}
-
-
 _REMOVE_TAG_REGULAR = re.compile(r'<.*?>')
 
 
-class NotFoundException(Exception):
-    pass
-
-
-class Crewer(object):
-    def __init__(self, board):
-        self._board = board
-
-    def get_document_by_url(self, url):
+class Crewer(CrewerInterface):
+    def get_doc_by_url(self, url):
         try:
-            request = requests.get(url, headers=_HEADERS)
+            request = requests.get(url, headers=HEADERS)
             page = bs4.BeautifulSoup(request.text, 'lxml')
             content = page.body.find(id='main-content')
 
@@ -41,15 +31,22 @@ class Crewer(object):
             content = self._remove_html_tags(str(content))
 
             meta_data = DocMetaData(
-                    0, 0, title, author, post_time, self._board,
+                    None, None, title, author, post_time, None,
                     [len([reply_row
                           for reply_row in reply_rows if reply_row[0] == a])
                      for a in range(NUM_REPLY_MODES)])
-            real_data = DocRealData(content, [ReplyMessage(*r)
-                                              for r in reply_rows])
-            return ADocument(url, meta_data, real_data)
-        except Exception as e:
-            raise NotFoundException()
+            real_data = DocRealData(content,
+                                    [ReplyMessage(*r) for r in reply_rows])
+        except Exception as _:
+            print(_)
+            meta_data = DocMetaData(
+                    None, None, '', '', 999999999999, None, [0, 0, 0])
+            real_data = DocRealData('', [])
+        ret = ADocument()
+        ret.url = url
+        ret.meta_data = meta_data
+        ret.real_data = real_data
+        return ret
 
     @staticmethod
     def _get_page_title(page):

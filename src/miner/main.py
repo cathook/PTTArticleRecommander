@@ -2,14 +2,14 @@
 
 import argparse
 import logging
-import sys
 import os
-from modules.backend_interface import BackendInterface
-from modules.server import Server
-from modules.mining import BBSCrawler
-from modules.build import BuildData
+import sys
 
-# import somethig
+from modules.build import BuildData
+from modules.l2_miner import L2Miner
+from modules.mining import BBSCrawler
+from modules.server import Server
+
 
 def main():
     logging.basicConfig(level=logging.INFO)
@@ -29,23 +29,33 @@ def main():
                     help='The Place you want to put your mining file')
     ap.add_argument('--mining', type=bool, nargs='?', default=False,
                     help='Mining or not')
+    ap.add_argument('--storage_path', type=str, nargs='?', default='./storage',
+                    help='Path to storeage the mirror of the ptt server.')
+    ap.add_argument('--cache_size', type=int, nargs='?', default=5000,
+                    help='Number of documents should be cached in the RAM.')
+    ap.add_argument('--miner2', type=bool, nargs='?', default=False,
+                    help='Use the version 2 miner or not.')
     opts = ap.parse_args()
-    CurrentDir = os.getcwd()
 
-    # TODO(joemen): Change it to the real backend server.
-    if opts.mining == True:
-        miner = BBSCrawler(opts.board,opts.number,opts.fetch_path)
-        miner.getAllPagesInTheBoard()
-        miner.getContent()
-    os.chdir(CurrentDir)
-    backend = BuildData(opts.fetch_path + opts.board)  #BackendInterface()
-    os.chdir(CurrentDir)
+    if opts.miner2:
+        backend = L2Miner(logging.getLogger('miner'),
+                          opts.cache_size, opts.storage_path)
+    else:
+        current_dir = os.getcwd()
+        if opts.mining == True:
+            miner = BBSCrawler(opts.board,opts.number,opts.fetch_path)
+            miner.getAllPagesInTheBoard()
+            miner.getContent()
+        os.chdir(current_dir)
+        backend = BuildData(opts.fetch_path + opts.board)
+        os.chdir(current_dir)
+
     server = Server(backend, opts.server_addr, opts.server_port)
     try:
         server.run()
     except Exception as e:
         server.stop()
-        logger.info('Get exception: %r' % e)
+        logger.error('Get exception: %r' % e)
         sys.exit(1)
     sys.exit(0)
 
