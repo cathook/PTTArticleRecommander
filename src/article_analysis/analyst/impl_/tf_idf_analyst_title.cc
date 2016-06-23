@@ -5,6 +5,7 @@
 #include "cppjieba/KeywordExtractor.hpp"
 #include "tf_idf_analyst_title.h"
 #include "protocol/types.h"
+#include "utils/funcs.h"
 
 using namespace std;
 using protocol::types::Board;
@@ -18,12 +19,13 @@ using protocol::types::ReplyMode;
 
 #define k 1.5
 #define b 0.75
+#define FULL_PATH(x) (utils::GetPackageRoot() + x)
 
-const char* const DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/jieba.dict.utf8";
-const char* const HMM_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/hmm_model.utf8";
-const char* const USER_DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/user.dict.utf8";
-const char* const IDF_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/idf.utf8";
-const char* const STOP_WORD_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/stop_words.utf8";
+const char* const DICT_PATH = "dict/jieba.dict.utf8";
+const char* const HMM_PATH = "dict/hmm_model.utf8";
+const char* const USER_DICT_PATH = "dict/user.dict.utf8";
+const char* const IDF_PATH = "dict/idf.utf8";
+const char* const STOP_WORD_PATH = "dict/stop_words.utf8";
 
 namespace analyst {
 
@@ -37,15 +39,19 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 	map<string, int> word_map;
 	map<string, int> final_word_map;
 	map<string, int>::iterator word_it;
-	cppjieba::Jieba jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH);
-	cppjieba::KeywordExtractor extractor(jieba, IDF_PATH, STOP_WORD_PATH);
+	cppjieba::Jieba jieba(utils::GetShareFileFullPath(DICT_PATH),
+			      utils::GetShareFileFullPath(HMM_PATH),
+			      utils::GetShareFileFullPath(USER_DICT_PATH));
+	cppjieba::KeywordExtractor extractor(jieba,
+					utils::GetShareFileFullPath(IDF_PATH),
+					utils::GetShareFileFullPath(STOP_WORD_PATH));
 	opencc::SimpleConverter my_opencc("tw2sp.json");
 	Board board_name = "Gossiping";
 	Identity max_id;
 	vector<Content> article_content_vec;
 	max_id = miner->GetMaxId(board_name);
 	int opinion;
-	
+
 	vector<float> final_IDF;
 	vector<float> IDF;
 	vector<bool> IDF_add;
@@ -54,14 +60,14 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 	meta_data = miner->GetDocMetaDataAfterId(board_name, 0);
 
 	for (Identity id = 0; id <= max_id; id ++){
-		
+
 		opinion = meta_data[id].num_reply_rows[(int)ReplyMode::GOOD] - meta_data[id].num_reply_rows[(int)ReplyMode::WOO];
 		fflush(stdout);
 		if(opinion > 0){
 			for(unsigned i = 0; i < IDF_add.size(); i ++)
 				IDF_add[i] = false;
 			meta_data[id].title = my_opencc.Convert(meta_data[id].title);
-			
+
 			//n words
 			//vector<pair<string, string> > tagres;
 			//jieba.Tag(meta_data[id].title, tagres);
@@ -280,7 +286,7 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 						printf("%f\n", avg_doc_len);
 						printf("%f\n", ((float)file_word[j][i]+k*(1-b+b*doc_len[j]/avg_doc_len)));
 						printf("score nan\n");
-					}	
+					}
 				}
 			}
 		}
@@ -331,7 +337,7 @@ DocRelInfo TfIdfAnalystTitle::GetDocRelInfo(DocIdentity const& id) const{
 			temp.board = "Gossiping";
 			relavant.push_back(temp);
 		}
-	}	
+	}
 	return DocRelInfo(relavant, relavant, relavant);
 }
 

@@ -110,6 +110,11 @@ inline Type TransformFromStr(std::string const& s) {
 
 std::string const& GetPackageRoot();
 
+
+inline std::string GetShareFileFullPath(std::string const& s) {
+  return GetPackageRoot() + "/share/article_analysis/" + s;
+}
+
 }  // namespace utils
 
 #endif  // ARTICLE_ANALYSIS_UTILS_FUNCS_H_

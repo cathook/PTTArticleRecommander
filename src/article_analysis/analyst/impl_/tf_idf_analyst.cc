@@ -22,11 +22,11 @@ using protocol::types::ReplyMode;
 #define k 1.5
 #define b 0.75
 
-const char* const DICT_PATH = "/share/dict/jieba.dict.utf8";
-const char* const HMM_PATH = "/share/dict/hmm_model.utf8";
-const char* const USER_DICT_PATH = "/share/dict/user.dict.utf8";
-const char* const IDF_PATH = "/share/dict/idf.utf8";
-const char* const STOP_WORD_PATH = "/share/dict/stop_words.utf8";
+const char* const DICT_PATH = "dict/jieba.dict.utf8";
+const char* const HMM_PATH = "dict/hmm_model.utf8";
+const char* const USER_DICT_PATH = "dict/user.dict.utf8";
+const char* const IDF_PATH = "dict/idf.utf8";
+const char* const STOP_WORD_PATH = "dict/stop_words.utf8";
 
 namespace analyst {
 
@@ -40,12 +40,12 @@ TfIdfAnalyst::TfIdfAnalyst(miner::Miner *miner){
 	map<string, int> word_map;
 	map<string, int> final_word_map;
 	map<string, int>::iterator word_it;
-	cppjieba::Jieba jieba(utils::GetPackageRoot() + DICT_PATH,
-			      utils::GetPackageRoot() + HMM_PATH,
-			      utils::GetPackageRoot() + USER_DICT_PATH);
+	cppjieba::Jieba jieba(utils::GetShareFileFullPath(DICT_PATH),
+			      utils::GetShareFileFullPath(HMM_PATH),
+			      utils::GetShareFileFullPath(USER_DICT_PATH));
 	cppjieba::KeywordExtractor extractor(jieba,
-					utils::GetPackageRoot() + IDF_PATH,
-					utils::GetPackageRoot() + STOP_WORD_PATH);
+					utils::GetShareFileFullPath(IDF_PATH),
+					utils::GetShareFileFullPath(STOP_WORD_PATH));
 	const size_t topk = 10;
 	opencc::SimpleConverter my_opencc("tw2sp.json");
 	Board board_name = "Gossiping";
