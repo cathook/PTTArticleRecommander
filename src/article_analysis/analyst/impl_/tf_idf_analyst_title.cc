@@ -53,14 +53,35 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 	vector<DocMetaData> meta_data;
 	meta_data = miner->GetDocMetaDataAfterId(board_name, 0);
 
-	for (Identity id = 0; id <= max_id; id ++){
+	string puntuation = ".?!()$,><^-_=|+	 *\"\\/[]{};%#`&~@";
+	for (Identity id = 0; id < max_id; id ++){
 		
 		opinion = meta_data[id].num_reply_rows[(int)ReplyMode::GOOD] - meta_data[id].num_reply_rows[(int)ReplyMode::WOO];
 		fflush(stdout);
 		if(opinion > 0){
 			for(unsigned i = 0; i < IDF_add.size(); i ++)
 				IDF_add[i] = false;
-			meta_data[id].title = my_opencc.Convert(meta_data[id].title);
+			string final = "";
+			for(unsigned i = 0; i < meta_data[id].title.length(); i ++){
+				bool skip = false;
+				for(unsigned j = 0; j < puntuation.length(); j ++){
+					if(meta_data[id].title[i] == puntuation[j]){
+						skip = true;
+						break;
+					}
+				}
+				if(!skip){
+					if(meta_data[id].title[i] != ':'){
+						final += meta_data[id].title[i];
+					}
+					else{
+						while(i < meta_data[id].title.length() && meta_data[id].title[i] != '\n')
+							i ++;
+					}
+				
+				}
+			}
+			meta_data[id].title = my_opencc.Convert(final);
 			
 			//n words
 			//vector<pair<string, string> > tagres;
@@ -107,6 +128,10 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 			vector<string> tagres;
 			jieba.CutForSearch(meta_data[id].title, tagres);
 			for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
+				if(id == 1 || id == 157){
+					string s = *it;
+					printf("%s\n", s.c_str());
+				}
 				word_it = word_map.find(*it);
 				if(word_it == word_map.end()){
 					word_map.insert(pair<string, int>(*it, noun_num));
@@ -308,15 +333,15 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 				temp_max[2] = score[i];
 			}
 		}
-		printf("%d\n", l+1);
+		//printf("%d\n", l+1);
 		vector<int> temp_push;
 		for(int i = 0; i < 3; i ++){
 			if(max_index[i] != -1){
-				printf("%d ", max_index[i]+1);
+				//printf("%d ", max_index[i]+1);
 				temp_push.push_back(max_index[i]);
 			}
 		}
-		printf("\n\n");
+		//printf("\n\n");
 		recommended_file.push_back(temp_push);
 		if(l % 1000 == 0)
 			fprintf(stderr, "%d\n", l+1);
@@ -325,9 +350,9 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 DocRelInfo TfIdfAnalystTitle::GetDocRelInfo(DocIdentity const& id) const{
 	vector<DocIdentity> relavant;
 	DocIdentity temp;
-	if(file_calculated[id.id - 1]){
-		for(unsigned i = 0; i < recommended_file[id.id - 1].size(); i ++){
-			temp.id = recommended_file[id.id - 1][i] + 1;
+	if(file_calculated[id.id]){
+		for(unsigned i = 0; i < recommended_file[id.id].size(); i ++){
+			temp.id = recommended_file[id.id][i];
 			temp.board = "Gossiping";
 			relavant.push_back(temp);
 		}

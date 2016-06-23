@@ -17,8 +17,8 @@ class Options : public utils::AOptionCollection {
  public:
   Options() : AOptionCollection("Options for the analyst.") {
     AddOption<utils::TypedOption<std::string>>(
-        "impl_type", "tf_idf_content",
-		"Implement type, default=tf_idf_content. "
+        "impl_type", "tf_idf_title",
+		"Implement type, default=tf_idf_title. "
 		"Option: tf_idf_title, tf_idf_content");
   }
 };
