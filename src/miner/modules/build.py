@@ -58,9 +58,10 @@ class BuildData(object):
         return cnt
 
     def get_doc_meta_data_after_id(self, board, idid):
+        idid = idid + 1
         ansList = []
         for i in range(0,len(self.jsondata)):
-            if self.jsondata[i]['Board'] == board and self.jsondata[i]['Id'] == idid :
+            if self.jsondata[i]['Board'] == board and self.jsondata[i]['Id'] >= idid :
                 ansList.append(self.metadata[i])
         return ansList
 
