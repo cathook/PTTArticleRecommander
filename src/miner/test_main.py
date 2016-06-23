@@ -5,7 +5,10 @@ import unittest
 
 
 def main():
-    tests = unittest.TestLoader().discover('.', pattern='*_test.py')
+    pattern = '*_test.py'
+    if len(sys.argv) > 1:
+        pattern = sys.argv[1]
+    tests = unittest.TestLoader().discover('.', pattern=pattern)
     result = unittest.runner.TextTestRunner().run(tests)
     sys.exit(0 if result.wasSuccessful() else 1)
 
