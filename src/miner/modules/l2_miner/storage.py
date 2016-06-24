@@ -12,7 +12,8 @@ class CrewerInterface(object):
 
 
 class Storage(StorageInterface):
-    def __init__(self, data_dir, crewer):
+    def __init__(self, logger, data_dir, crewer):
+        self._logger = logger
         self._data_dir = data_dir
         self._crewer = crewer
 
@@ -34,34 +35,47 @@ class Storage(StorageInterface):
         return self.get_doc_by_id(a).url if a >= 0 else None
 
     def add_url(self, idid, url):
-        doc = self._crewer.get_doc_by_url(url, idid)
-        doc.meta_data.idid = idid
         fname = os.path.join(self._data_dir, str(idid))
-        with self._lock:
-            with open(fname, 'wb') as f:
-                pickle.dump(doc, f)
-
-            self._max_id = max(self._max_id, idid)
-            # notifies the waiting guys that the storage data was updated
-            self._lock.notify()
+        if not os.path.isfile(fname):
+            self._update_url(idid, url)
 
     def update_after_time(self, last_time):
+        self._logger.info(
+                'Start to update all documents posted after %d' % last_time)
+        print('max=%r' % self._max_id)
         for idid in range(self._max_id, -1, -1):
+            print('aaaaaaaaaaaa')
             doc = self.get_doc_by_id(idid)
+            print('bbbbbbbbb')
             if doc.meta_data.post_time < last_time:
                 break
-            self._update_doc(doc)
+            self._logger.info('Update doc %d' % doc.meta_data.idid)
+            self._update_url(doc.meta_data.idid, doc.url)
+        self._logger.info('End update')
 
     def yield_doc_reverse_from_id(self, idid):
         for i in range(idid, -1, -1):
             yield self.get_doc_by_id(i)
 
+    def yield_stored_doc_reverse_from_id(self, idid):
+        for i in range(idid, -1, -1):
+            fname = os.path.join(self._data_dir, str(i))
+            with self._lock:
+                if not os.path.isfile(fname):
+                    break
+                with open(fname, 'rb') as f:
+                    self._logger.info('Load doc %d from the storage.' % idid)
+                    yield pickle.load(f)
+
     def get_doc_by_id(self, idid):
         fname = os.path.join(self._data_dir, str(idid))
         with self._lock:
             while not os.path.isfile(fname):
+                self._logger.info('Document %r is currently unavailiable, wait.'
+                                  % idid)
                 self._lock.wait()
             with open(fname, 'rb') as f:
+                self._logger.info('Load doc %d from the storage.' % idid)
                 return pickle.load(f)
 
     def get_id_by_url(self, url):
@@ -83,9 +97,19 @@ class Storage(StorageInterface):
         else:
             return ''
 
-    def _update_doc(self, doc):
-        self.add_url(doc.meta_data.idid, doc.url)
+    def _update_url(self, idid, url):
+        doc = self._crewer.get_doc_by_url(url)
+        doc.meta_data.idid = idid
+        doc.meta_data.prev_id = idid
+        fname = os.path.join(self._data_dir, str(idid))
+        with self._lock:
+            self._logger.info('Dump doc %d to the storage.' % idid)
+            s = pickle.dumps(doc)
+            with open(fname, 'wb') as f:
+                f.write(s)
 
-    def _update_by_id(self, idid):
-        doc = self.get_doc_by_id(idid)
-        self.aadd_url(doc.meta_data.idid, doc.url)
+            self._max_id = max(self._max_id, idid)
+            self._logger.info('An document was added/updated, id=%r' % idid)
+
+            # notifies the waiting guys that the storage data was updated
+            self._lock.notify()

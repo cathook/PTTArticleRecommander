@@ -1,4 +1,5 @@
 import inspect
+import logging
 import sys
 import time
 import unittest
@@ -40,7 +41,8 @@ class _FakeBoardCache(board_listener.BoardCacheInterface):
 class TestBoardListener(unittest.TestCase):
     def runTest(self):
         c = _FakeBoardCache()
-        bl = board_listener.BoardListener('Gossiping', 1000, c)
+        bl = board_listener.BoardListener(
+                logging.getLogger(), 'Gossiping', 1000, c)
         bl.start()
         while not c.done_flag:
             time.sleep(0.01)

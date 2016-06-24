@@ -46,10 +46,11 @@ class _BoardListenerUrlGenerator(object):
 
 
 class BoardListener(threading.Thread):
-    def __init__(self, board_name, update_timestamp, cache):
+    def __init__(self, logger, board_name, update_timestamp, cache):
         super(BoardListener, self).__init__()
         self.daemon = True
 
+        self._logger = logger
         self._board_name = board_name
         self._url_prefix = URL_PREFIX + board_name + '/'
         self._update_timestamp = update_timestamp
@@ -62,11 +63,13 @@ class BoardListener(threading.Thread):
             max_page_idx = self._get_max_page_idx()
 
             n = self._estimate_num_urls_between(url_num, max_page_idx)
-            g = _BoardListenerUrlGenerator(self._get_page_urls,
-                                           self._get_url_compare_num,
-                                           url_num,
-                                           max_page_idx)
             if n > 0:
+                g = _BoardListenerUrlGenerator(self._get_page_urls,
+                                               self._get_url_compare_num,
+                                               url_num,
+                                               max_page_idx)
+                self._logger.info(
+                        'Found about %d new docs, update the cache.' % n)
                 self._cache.add_urls(n, g)
             time.sleep(self._update_timestamp)
 

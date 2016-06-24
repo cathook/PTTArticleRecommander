@@ -1,7 +1,6 @@
 class ADocument(object):
     def __init__(self):
         self.url = None
-        self.idid = None
         self.meta_data = None
         self.real_data = None
 

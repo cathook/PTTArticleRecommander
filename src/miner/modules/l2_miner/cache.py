@@ -1,3 +1,4 @@
+import datetime
 import threading
 import time
 
@@ -21,6 +22,9 @@ class StorageInterface(object):
         pass
 
     def yield_doc_reverse_from_id(self, idid):
+        pass
+
+    def yield_stored_doc_reverse_from_id(self, idid):
         pass
 
     def get_doc_by_id(self, idid):
@@ -56,7 +60,8 @@ class _CacheUpdateNotifier(threading.Thread):
 
 
 class Cache(BoardCacheInterface, RealBackendInterface):
-    def __init__(self, cache_size, storage):
+    def __init__(self, logger, cache_size, storage):
+        self._logger = logger
         self._cache_size = cache_size
         self._storage = storage
 
@@ -65,6 +70,7 @@ class Cache(BoardCacheInterface, RealBackendInterface):
         self._min_id = 0
         self._url_to_id = {}
         self._cache_lock = threading.Lock()
+        self.updated = False
 
         self._init_from_storage()
 
@@ -84,7 +90,9 @@ class Cache(BoardCacheInterface, RealBackendInterface):
             return self._max_id
 
     def update(self, post_time):
-        t = int(atetime.datetime.now().timestamp() - post_time)
+        t = int(datetime.datetime.now().timestamp() - post_time)
+        self._logger.info(
+                'Start to update docs which was posted later than %d' % t)
         self._storage.update_after_time(t)
         with self._cache_lock:
             for i in range(len(self._cache)):
@@ -102,6 +110,7 @@ class Cache(BoardCacheInterface, RealBackendInterface):
             else:
                 self._cache = [None] * self._cache_size
                 self._min_id = self._max_id - self._cache_size + 1
+        self.updated = True
 
         ct = 0
         for url in urls_gen:
@@ -109,6 +118,7 @@ class Cache(BoardCacheInterface, RealBackendInterface):
             with self._cache_lock:
                 if self._min_id <= curr_id:
                     self._cache[curr_id - self._min_id] = doc
+                    self._logger.info('Cached doc %d' % curr_id)
             curr_id -= 1
             ct += 1
             if ct >= num_urls:
@@ -137,7 +147,8 @@ class Cache(BoardCacheInterface, RealBackendInterface):
     def _init_from_storage(self):
         with self._cache_lock:
             self._max_id = self._storage.max_id
-            for doc in self._storage.yield_doc_reverse_from_id(self._max_id):
+            y = self._storage.yield_stored_doc_reverse_from_id(self._max_id)
+            for doc in y:
                 self._cache = [doc] + self._cache
                 self._url_to_id[doc.url] = doc.meta_data.idid;
                 if len(self._cache) >= self._cache_size:

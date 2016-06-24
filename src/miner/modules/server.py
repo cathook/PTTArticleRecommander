@@ -6,6 +6,7 @@ import time
 from modules.protocol import net
 from modules.protocol import types
 from modules.protocol.net import PackageType
+from modules import utils
 
 
 class _ProtocolError(Exception):
@@ -196,10 +197,12 @@ class _SocketConnectionHandler(threading.Thread):
         except self._StopException as e:
             pass
         except Exception as e:
-            self._logger.warning('Got an exception %r, stop the handler.' % e)
+            self._logger.warning(utils.get_exception_msg(e))
+            self._logger.info('Stop the handler.')
             self._end_notify_func(self._connection)
         finally:
             if self._auto_close:
+                self._logger.info('Close the connection.')
                 self._connection.close()
 
     def stop(self):
@@ -317,6 +320,8 @@ class Server(object):
             handler_thread.stop()
             handler_thread.join()
         self._handler_threads = []
+        self._logger.info('Close the server.')
+        self._sock.close()
         self._sock = None
 
     def notify_handler_thread_end(self, thr):

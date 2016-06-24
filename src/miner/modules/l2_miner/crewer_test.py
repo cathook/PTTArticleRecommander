@@ -1,4 +1,5 @@
 import inspect
+import logging
 import sys
 import unittest
 
@@ -16,7 +17,7 @@ def load_tests(loader, tests, pattern):
 
 class TestCrewer(unittest.TestCase):
     def runTest(self):
-        a = crewer.Crewer()
+        a = crewer.Crewer(logging.getLogger())
         url = 'https://www.ptt.cc/bbs/Gossiping/M.1455624927.A.11D.html'
         doc = a.get_doc_by_url(url)
         self.assertEqual(doc.url, url)
@@ -24,5 +25,5 @@ class TestCrewer(unittest.TestCase):
         self.assertTrue(doc.meta_data.title.startswith('[公告] 八卦板板規'))
         self.assertTrue('第一條' in doc.real_data.content)
 
-        doc = a.get_doc_by_url('sadfdsafdsafdsafdsafs')
+        doc = a.get_doc_by_url('https://sadfdsafdsafdsafdsafs')
         self.assertEqual(doc.meta_data.title, '')

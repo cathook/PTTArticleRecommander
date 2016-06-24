@@ -9,6 +9,7 @@ from modules.build import BuildData
 from modules.l2_miner import L2Miner
 from modules.mining import BBSCrawler
 from modules.server import Server
+from modules.utils import get_exception_msg
 
 
 def main():
@@ -53,10 +54,16 @@ def main():
     server = Server(backend, opts.server_addr, opts.server_port)
     try:
         server.run()
+    except KeyboardInterrupt as e:
+        logger.info('Keyboard interrupt.')
+    except SystemExit as _:
+        logger.info('System exit.')
     except Exception as e:
-        server.stop()
-        logger.error('Get exception: %r' % e)
+        logger.info(get_exception_msg(e))
         sys.exit(1)
+    finally:
+        logger.info('Cleanup')
+        server.stop()
     sys.exit(0)
 
 

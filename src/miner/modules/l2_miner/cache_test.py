@@ -1,4 +1,5 @@
 import inspect
+import logging
 import sys
 import threading
 import time
@@ -62,7 +63,7 @@ class _FakeStorage(cache.StorageInterface):
 class TestCache1(unittest.TestCase):
     def runTest(self):
         fs = _FakeStorage()
-        c = cache.Cache(5, fs)
+        c = cache.Cache(logging.getLogger(), 5, fs)
         self.assertEqual(c.newest_url, '-1')
         def func():
             c.add_urls(8, ['7', '6', '5', '4', '3', '2', '1', '0'])
@@ -83,8 +84,3 @@ class TestCache1(unittest.TestCase):
         thr.join()
         self.assertEqual(fs.num_docs, 8)
         self.assertEqual(fs.num_called, 2)
-
-
-class TestCache2(unittest.TestCase):
-    def runTest(self):
-        pass

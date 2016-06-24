@@ -1,4 +1,5 @@
 import inspect
+import logging
 import os
 import sys
 import tempfile
@@ -24,20 +25,21 @@ class _FakeCrewer(storage.CrewerInterface):
     def __init__(self):
         self.counter = 0
 
-    def get_doc_by_url(self, url, idid):
+    def get_doc_by_url(self, url):
         self.counter += 1
         doc = common.ADocument()
         doc.url = url
         doc.meta_data = types.DocMetaData(
-                idid, idid, url, url, idid, url, [0, 0, 0])
+                None, None, url, url, 0, url, [0, 0, 0])
         doc.real_data = types.DocRealData(url, [])
         return doc
 
 class TestCrewer(unittest.TestCase):
     def runTest(self):
+        lg = logging.getLogger()
         fc = _FakeCrewer()
         tdir = tempfile.mkdtemp()
-        s = storage.Storage(tdir, fc)
+        s = storage.Storage(lg, tdir, fc)
 
         self.assertEqual(s.max_id, -1)
         self.assertEqual(s.newest_url, None)
@@ -62,7 +64,7 @@ class TestCrewer(unittest.TestCase):
         thr.join()
 
         fc.counter = 0
-        s = storage.Storage(tdir, fc)
+        s = storage.Storage(lg, tdir, fc)
         self.assertEqual(s.max_id, 10)
         self.assertEqual(s.get_doc_by_id(9).url, 'url09')
         self.assertEqual(s.get_doc_by_id(9).real_data.content, 'url09')
