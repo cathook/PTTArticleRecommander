@@ -14,6 +14,7 @@ class TfIdfAnalystTitle : public IAnalyst {
 		TfIdfAnalystTitle(miner::Miner *miner);
 		DocRelInfo GetDocRelInfo(DocIdentity const& id) const override final;
 	private:
+		int id_base;
 		std::vector<std::vector<int> > recommended_file;
 		std::vector<bool>file_calculated;
 };

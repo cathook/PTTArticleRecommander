@@ -41,9 +41,7 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 	cppjieba::KeywordExtractor extractor(jieba, IDF_PATH, STOP_WORD_PATH);
 	opencc::SimpleConverter my_opencc("tw2sp.json");
 	Board board_name = "Gossiping";
-	Identity max_id;
 	vector<Content> article_content_vec;
-	max_id = miner->GetMaxId(board_name);
 	int opinion;
 	
 	vector<float> final_IDF;
@@ -51,13 +49,13 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 	vector<bool> IDF_add;
 	fprintf(stderr, "read first time\n");
 	vector<DocMetaData> meta_data;
-	meta_data = miner->GetDocMetaDataAfterId(board_name, 0);
+	meta_data = miner->GetDocMetaDataAfterTime(board_name, time(NULL) - 1 * 24 * 60 * 60);
+	id_base = meta_data[0].id;
 
 	string puntuation = ".?!()$,><^-_=|+	 *\"\\/[]{};%#`&~@";
-	for (Identity id = 0; id < max_id; id ++){
+	for (unsigned id = 0; id < meta_data.size(); id ++){
 		
 		opinion = meta_data[id].num_reply_rows[(int)ReplyMode::GOOD] - meta_data[id].num_reply_rows[(int)ReplyMode::WOO];
-		fflush(stdout);
 		if(opinion > 0){
 			for(unsigned i = 0; i < IDF_add.size(); i ++)
 				IDF_add[i] = false;
@@ -128,10 +126,6 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 			vector<string> tagres;
 			jieba.CutForSearch(meta_data[id].title, tagres);
 			for(vector<string>::iterator it = tagres.begin(); it != tagres.end(); it++){
-				if(id == 1 || id == 157){
-					string s = *it;
-					printf("%s\n", s.c_str());
-				}
 				word_it = word_map.find(*it);
 				if(word_it == word_map.end()){
 					word_map.insert(pair<string, int>(*it, noun_num));
@@ -350,9 +344,9 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 DocRelInfo TfIdfAnalystTitle::GetDocRelInfo(DocIdentity const& id) const{
 	vector<DocIdentity> relavant;
 	DocIdentity temp;
-	if(file_calculated[id.id]){
-		for(unsigned i = 0; i < recommended_file[id.id].size(); i ++){
-			temp.id = recommended_file[id.id][i];
+	if(file_calculated[id.id - id_base]){
+		for(unsigned i = 0; i < recommended_file[id.id - id_base].size(); i ++){
+			temp.id = recommended_file[id.id - id_base][i];
 			temp.board = "Gossiping";
 			relavant.push_back(temp);
 		}

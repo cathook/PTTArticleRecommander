@@ -42,30 +42,30 @@ TfIdfAnalystContent::TfIdfAnalystContent(miner::Miner *miner){
 	//const size_t topk = 5;
 	opencc::SimpleConverter my_opencc("tw2sp.json");
 	Board board_name = "Gossiping";
-	Identity max_id;
 	vector<Content> article_content_vec;
-	max_id = miner->GetMaxId(board_name);
-	int opinion;
+	//int opinion;
 	DocRealData doc_real_data;	
 	vector<float> final_IDF;
 	vector<float> IDF;
 	vector<bool> IDF_add;
 	fprintf(stderr, "read first time\n");
-	vector<DocMetaData> meta_data;
 	string puntuation = ".?!()$,><^-_=|+	 *\"\\/[]{};%#`&~@";
+	vector<DocMetaData> meta_data = miner->GetDocMetaDataAfterTime(board_name, time(NULL) - 1 * 24 * 60 * 60);
+	id_base = meta_data[0].id;
 
-	for (Identity id = 0; id < max_id; id ++){
-		doc_real_data = miner->GetDocRealData(board_name, id);
-		opinion = 0;
-		for(vector<ReplyMessage>::iterator message_it = doc_real_data.reply_messages.begin(); 
-			message_it != doc_real_data.reply_messages.end(); message_it ++){
-			if(message_it->mode == ReplyMode::GOOD)
-				opinion ++;
-			else if(message_it->mode == ReplyMode::WOO)
-				opinion --;
-		}
 
-		if(opinion > 0){
+	for (unsigned id = 0; id < meta_data.size(); id ++){
+		doc_real_data = miner->GetDocRealData(board_name, meta_data[id].id);
+	//	opinion = 0;
+	//	for(vector<ReplyMessage>::iterator message_it = doc_real_data.reply_messages.begin(); 
+	//		message_it != doc_real_data.reply_messages.end(); message_it ++){
+	//		if(message_it->mode == ReplyMode::GOOD)
+	//			opinion ++;
+	//		else if(message_it->mode == ReplyMode::WOO)
+	//			opinion --;
+	//	}
+
+		if(meta_data[id].num_reply_rows[(int)ReplyMode::GOOD] - meta_data[id].num_reply_rows[(int)ReplyMode::WOO] > 0){
 			for(unsigned i = 0; i < IDF_add.size(); i ++)
 				IDF_add[i] = false;
 
@@ -351,9 +351,9 @@ TfIdfAnalystContent::TfIdfAnalystContent(miner::Miner *miner){
 DocRelInfo TfIdfAnalystContent::GetDocRelInfo(DocIdentity const& id) const{
 	vector<DocIdentity> relavant;
 	DocIdentity temp;
-	if(file_calculated[id.id]){
-		for(unsigned i = 0; i < recommended_file[id.id].size(); i ++){
-			temp.id = recommended_file[id.id][i];
+	if(file_calculated[id.id - id_base]){
+		for(unsigned i = 0; i < recommended_file[id.id - id_base].size(); i ++){
+			temp.id = recommended_file[id.id - id_base][i];
 			temp.board = "Gossiping";
 			relavant.push_back(temp);
 		}
