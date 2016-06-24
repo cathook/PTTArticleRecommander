@@ -53,8 +53,10 @@ class DocMetaData(object):
         self.prev_id = prev_id
         self.title = title
         self.author = author
-        self.post_time = post_time
-        self.post_time = 0
+        try:
+            self.post_time = int(post_time)
+        except Exception as _:
+            self.post_time = 0
         self.board = board
         self.num_reply_rows = [a for a in num_reply_rows]
 

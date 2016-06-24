@@ -5,6 +5,7 @@
 #include "cppjieba/KeywordExtractor.hpp"
 #include "tf_idf_analyst_title.h"
 #include "protocol/types.h"
+#include "utils/funcs.h"
 
 using namespace std;
 using protocol::types::Board;
@@ -18,12 +19,13 @@ using protocol::types::ReplyMode;
 
 #define k 1.5
 #define b 0.75
+#define FULL_PATH(x) (utils::GetPackageRoot() + x)
 
-const char* const DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/jieba.dict.utf8";
-const char* const HMM_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/hmm_model.utf8";
-const char* const USER_DICT_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/user.dict.utf8";
-const char* const IDF_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/idf.utf8";
-const char* const STOP_WORD_PATH = "/home/student/01/b01902013/IR_final/PTTArticleRecommander/deps/cppjieba/dict/stop_words.utf8";
+const char* const DICT_PATH = "dict/jieba.dict.utf8";
+const char* const HMM_PATH = "dict/hmm_model.utf8";
+const char* const USER_DICT_PATH = "dict/user.dict.utf8";
+const char* const IDF_PATH = "dict/idf.utf8";
+const char* const STOP_WORD_PATH = "dict/stop_words.utf8";
 
 namespace analyst {
 
@@ -37,19 +39,23 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 	map<string, int> word_map;
 	map<string, int> final_word_map;
 	map<string, int>::iterator word_it;
-	cppjieba::Jieba jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH);
-	cppjieba::KeywordExtractor extractor(jieba, IDF_PATH, STOP_WORD_PATH);
+	cppjieba::Jieba jieba(utils::GetShareFileFullPath(DICT_PATH),
+			      utils::GetShareFileFullPath(HMM_PATH),
+			      utils::GetShareFileFullPath(USER_DICT_PATH));
+	cppjieba::KeywordExtractor extractor(jieba,
+					utils::GetShareFileFullPath(IDF_PATH),
+					utils::GetShareFileFullPath(STOP_WORD_PATH));
 	opencc::SimpleConverter my_opencc("tw2sp.json");
 	Board board_name = "Gossiping";
 	vector<Content> article_content_vec;
 	int opinion;
-	
+
 	vector<float> final_IDF;
 	vector<float> IDF;
 	vector<bool> IDF_add;
 	fprintf(stderr, "read first time\n");
 	vector<DocMetaData> meta_data;
-	meta_data = miner->GetDocMetaDataAfterTime(board_name, time(NULL) - 1 * 24 * 60 * 60);
+	meta_data = miner->GetDocMetaDataAfterTime(board_name, time(NULL) - 60 * 60);
 	id_base = meta_data[0].id;
 
 	string puntuation = ".?!()$,><^-_=|+	 *\"\\/[]{};%#`&~@";
@@ -299,7 +305,7 @@ TfIdfAnalystTitle::TfIdfAnalystTitle(miner::Miner *miner){
 						printf("%f\n", avg_doc_len);
 						printf("%f\n", ((float)file_word[j][i]+k*(1-b+b*doc_len[j]/avg_doc_len)));
 						printf("score nan\n");
-					}	
+					}
 				}
 			}
 		}
@@ -350,7 +356,7 @@ DocRelInfo TfIdfAnalystTitle::GetDocRelInfo(DocIdentity const& id) const{
 			temp.board = "Gossiping";
 			relavant.push_back(temp);
 		}
-	}	
+	}
 	return DocRelInfo(relavant, relavant, relavant);
 }
 

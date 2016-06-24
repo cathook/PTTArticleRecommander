@@ -104,11 +104,11 @@ class IdentityStruct(object):
     '''Struct for document idnetity'''
     @staticmethod
     def pack(idid):
-        return struct.pack('<L', idid)
+        return struct.pack('<l', idid)
 
     @staticmethod
     def unpack(buf, offs=0):
-        return (struct.unpack('<L', buf[offs : offs + 4])[0], offs + 4)
+        return (struct.unpack('<l', buf[offs : offs + 4])[0], offs + 4)
 
 
 class TimeStruct(object):
