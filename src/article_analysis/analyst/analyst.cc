@@ -7,6 +7,7 @@
 #include "impl_/tf_idf_analyst_content.h"
 
 #include "impl_/tf_idf_analyst_title.h"
+#include "impl_/fake_analyst.h"
 
 using std::string;
 
@@ -27,6 +28,10 @@ IAnalyst* CreateAnalyst(Options const& options,
   }
   else if (impl_type == "tf_idf_content") {
     return new impl_::TfIdfAnalystContent(miner);
+  }
+  else if (impl_type == "fake") {
+    return new impl_::FakeAnalyst(
+        miner, *options.GetOption<impl_::FakeAnalystOptions>("fake_opts"));
   }
   
   logging::Logger* logger = parent_logger->CreateSubLogger("AnalystCreater");
