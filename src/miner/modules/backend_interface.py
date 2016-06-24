@@ -118,3 +118,6 @@ class BackendInterface(object):
         Returns: A string of url.
         '''
         raise UnimplementQueryError()
+
+    def destroy(self):
+        pass

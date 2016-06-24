@@ -2,61 +2,61 @@ import datetime
 import threading
 import time
 
-from modules.l2_miner.real_backend_interface import RealBackendInterface
 from modules.l2_miner.board_listener import BoardCacheInterface
+from modules.l2_miner.real_backend_interface import RealBackendInterface
+from modules.utils import sleep_if
+from modules.utils import UnimplementedMethodCalled
 
 
 class StorageInterface(object):
     @property
     def max_id(self):
-        pass
+        raise UnimplementedMethodCalled()
 
     @property
-    def newest_url(self):
-        pass
+    def newest_doc(self):
+        raise UnimplementedMethodCalled()
 
-    def add_url(self, idid, url):
-        pass
+    @property
+    def oldest_doc(self):
+        raise UnimplementedMethodCalled()
+
+    @property
+    def updated(self):
+        raise UnimplementedMethodCalled()
+
+    def add_doc(self, idid, url):
+        raise UnimplementedMethodCalled()
 
     def update_after_time(self, last_time):
-        pass
-
-    def yield_doc_reverse_from_id(self, idid):
-        pass
-
-    def yield_stored_doc_reverse_from_id(self, idid):
-        pass
+        raise UnimplementedMethodCalled()
 
     def get_doc_by_id(self, idid):
-        pass
+        raise UnimplementedMethodCalled()
 
-    def get_id_by_url(self, url):
-        pass
-
-    def get_url_by_id(self, idid):
-        pass
+    def get_doc_by_url(self, url):
+        raise UnimplementedMethodCalled()
 
 
 class _CacheUpdateNotifier(threading.Thread):
-    _TIME_PERIOD = 60 * 10
+    _TIME_PERIOD = 10 * 60
+    _MAX_BIT = 1024
 
     def __init__(self, callback):
         super(_CacheUpdateNotifier, self).__init__()
-        self.daemon = True
 
         self._callback = callback
+        self._stop_flag = False
+
+    def stop(self):
+        self._stop_flag = True
 
     def run(self):
-        ct = 0
         while True:
-            time.sleep(self._TIME_PERIOD)
-            ct += 1
-            i = 1
-            while (ct & i) == 0:
-                i *= 2
-            self._callback(self._TIME_PERIOD * i)
-            if i == 1024:
-                ct = 0
+            for a in range(1, self._MAX_BIT + 1):
+                if not sleep_if(self._TIME_PERIOD, lambda: not self._stop_flag):
+                    return
+                self._callback(self._TIME_PERIOD * (a & -a))
 
 
 class Cache(BoardCacheInterface, RealBackendInterface):
@@ -65,64 +65,37 @@ class Cache(BoardCacheInterface, RealBackendInterface):
         self._cache_size = cache_size
         self._storage = storage
 
-        self._cache = []
-        self._max_id = 0
+        self._docs = []
+        self._max_id = -1
         self._min_id = 0
         self._url_to_id = {}
         self._cache_lock = threading.Lock()
-        self.updated = False
 
-        self._init_from_storage()
-
-        self._update_thr = _CacheUpdateNotifier(self.update)
+        self._update_thr = _CacheUpdateNotifier(self._update_nearest_docs)
         self._update_thr.start()
 
+    def stop_auto_update(self):
+        self._update_thr.stop()
+        self._update_thr.join()
+
     @property
-    def newest_url(self):
-        with self._cache_lock:
-            if self._cache and self._cache[-1] is not None:
-                return self._cache[-1].url
-        return self._storage.newest_url
+    def newest_doc(self):
+        return self._storage.newest_doc
+
+    @property
+    def oldest_doc(self):
+        return self._storage.oldest_doc
+
+    def add_doc(self, idid, url):
+        return self._storage.add_doc(idid, url)
 
     @property
     def max_id(self):
-        with self._cache_lock:
-            return self._max_id
+        return self._storage.max_id
 
-    def update(self, post_time):
-        t = int(datetime.datetime.now().timestamp() - post_time)
-        self._logger.info(
-                'Start to update docs which was posted later than %d' % t)
-        self._storage.update_after_time(t)
-        with self._cache_lock:
-            for i in range(len(self._cache)):
-                if self._cache[i] is not None and \
-                        self._cache[i].meta_data.post_time >= t:
-                    self._cache[i] = None
-
-    def add_urls(self, num_urls, urls_gen):
-        with self._cache_lock:
-            self._max_id += num_urls
-            curr_id = self._max_id
-            if num_urls <= self._cache_size:
-                self._cache = self._cache + [None] * num_urls
-                self._ensure_cache_in_size()
-            else:
-                self._cache = [None] * self._cache_size
-                self._min_id = self._max_id - self._cache_size + 1
-        self.updated = True
-
-        ct = 0
-        for url in urls_gen:
-            doc = self._storage.add_url(curr_id, url)
-            with self._cache_lock:
-                if self._min_id <= curr_id:
-                    self._cache[curr_id - self._min_id] = doc
-                    self._logger.info('Cached doc %d' % curr_id)
-            curr_id -= 1
-            ct += 1
-            if ct >= num_urls:
-                break
+    @property
+    def updated(self):
+        return self._storage.updated
 
     def yield_doc_meta_data_reversed_from_id(self, idid):
         while idid >= 0:
@@ -131,42 +104,81 @@ class Cache(BoardCacheInterface, RealBackendInterface):
             idid -= 1
 
     def get_doc_real_data(self, idid):
-        doc = self._safe_get_doc_by_id(idid)
-        return doc.real_data
+        return self._safe_get_doc_by_id(idid).real_data
 
     def get_url_by_id(self, idid):
-        doc = self._safe_get_doc_by_id(idid)
-        return doc.url
+        return self._safe_get_doc_by_id(idid).url
 
     def get_id_by_url(self, url):
         with self._cache_lock:
             if url in self._url_to_id:
                 return self._url_to_id[url]
-        return self._storage.get_id_by_url(url)
 
-    def _init_from_storage(self):
+        doc = self._storage.get_doc_by_url(url)
+        if doc is None:
+            return -1
+        self._cache_doc_if_ok(doc)
+        return doc.meta_data.idid
+
+    def _update_nearest_docs(self, time_delta):
+        t = int(datetime.datetime.now().timestamp() - time_delta)
+        (min_id, max_id) = self._storage.update_after_time(t)
+
+        # Flushes the cache to force the later queries causing an cache update.
+        self._logger.info('Flush the cached documents posted later than %d' % t)
         with self._cache_lock:
-            self._max_id = self._storage.max_id
-            y = self._storage.yield_stored_doc_reverse_from_id(self._max_id)
-            for doc in y:
-                self._cache = [doc] + self._cache
-                self._url_to_id[doc.url] = doc.meta_data.idid;
-                if len(self._cache) >= self._cache_size:
-                    break
-            self._min_id = self._cache[0].meta_data.idid if self._cache else 0
-
-    def _ensure_cache_in_size(self):
-        while len(self._cache) > self._cache_size:
-            doc = self._cache[0]
-            self._cache = self._cache[1 : ]
-            del self._url_to_id[doc.url]
-            self._min_id += 1
+            for idid in range(max(self._min_id, min_id),
+                              min(self._max_id, max_id) + 1):
+                self._clean_cache_entry(idid - self._min_id)
 
     def _safe_get_doc_by_id(self, idid):
+        # Looks up the cache first.
         doc = None
         with self._cache_lock:
-            if self._min_id <= idid:
-                doc = self._cache[idid - self._min_id]
+            if self._min_id <= idid <= self._max_id:
+                doc = self._docs[idid - self._min_id]
+
+        # Fetches the document from the storage if it is not in the cache.
         if doc is None:
+            self._logger.info('Cache missed at document %d' % idid)
             doc = self._storage.get_doc_by_id(idid)
+            self._cache_doc_if_ok(doc)
+
         return doc
+
+    def _cache_doc_if_ok(self, doc):
+        idid = doc.meta_data.idid
+        with self._cache_lock:
+            if self._max_id < idid:
+                # Always caches the newer, so it moves the cache forward.
+                num_need_add = idid - self._max_id
+                if num_need_add >= self._cache_size:
+                    self._url_to_id = {}
+                    self._docs = [None]
+                    self._min_id = self._max_id = idid
+                else:
+                    self._shrink_cache_size(self._cache_size - num_need_add)
+                    self._docs = self._docs + [None] * num_need_add
+                    self._max_id = idid
+            elif idid < self._min_id and \
+                    (self._max_id - idid + 1) <= self._cache_size:
+                self._docs = [None] * (self._min_id - idid) + self._docs
+                self._min_id = idid
+
+            if self._min_id <= idid <= self._max_id:
+                self._logger.info('Cache the document %d, cache queue [%d, %d].'
+                                  % (idid, self._min_id, self._max_id))
+                self._docs[idid - self._min_id] = doc
+                self._url_to_id[doc.url] = idid
+
+    def _shrink_cache_size(self, size):
+        while len(self._docs) > size:
+            self._clean_cache_entry(0)
+            self._docs.pop(0)
+            self._min_id += 1
+
+    def _clean_cache_entry(self, i):
+        doc = self._docs[i]
+        if doc is not None:
+            del self._url_to_id[doc.url]
+            self._docs[i] = None

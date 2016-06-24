@@ -299,6 +299,7 @@ class Server(object):
         self._sock.bind((self._bind_addr, self._listen_port))
         self._sock.listen(1024)
         self._sock.settimeout(1)
+        self._logger.info('Miner server created.')
         while not self._stop_flag:
             try:
                 (conn, addr) =  self._sock.accept()
@@ -311,6 +312,7 @@ class Server(object):
             self._handler_threads.append(thr)
             thr.start()
         self._sock.close()
+        self._logger.info('Miner server closed')
 
     # TODO(cathook): Re-writes below two functions to free resouces faster.
     def stop(self):
@@ -321,8 +323,6 @@ class Server(object):
             handler_thread.join()
         self._handler_threads = []
         self._logger.info('Close the server.')
-        self._sock.close()
-        self._sock = None
 
     def notify_handler_thread_end(self, thr):
         '''A callback function for notifying one of the thread handler is end.

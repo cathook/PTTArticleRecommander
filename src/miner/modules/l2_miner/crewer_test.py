@@ -15,15 +15,30 @@ def load_tests(loader, tests, pattern):
     return suite
 
 
-class TestCrewer(unittest.TestCase):
-    def runTest(self):
-        a = crewer.Crewer(logging.getLogger())
-        url = 'https://www.ptt.cc/bbs/Gossiping/M.1455624927.A.11D.html'
-        doc = a.get_doc_by_url(url)
-        self.assertEqual(doc.url, url)
-        self.assertEqual(doc.meta_data.author, 'seabox')
-        self.assertTrue(doc.meta_data.title.startswith('[公告] 八卦板板規'))
-        self.assertTrue('第一條' in doc.real_data.content)
+class _TestCrewerBase(unittest.TestCase):
+    def setUp(self):
+        self.crewer = crewer.Crewer(logging.getLogger())
 
-        doc = a.get_doc_by_url('https://sadfdsafdsafdsafdsafs')
-        self.assertEqual(doc.meta_data.title, '')
+
+class TestCrewerOkey(_TestCrewerBase):
+    def runTest(self):
+        url = 'https://www.ptt.cc/bbs/Gossiping/M.1455624927.A.11D.html'
+        for i in range(100):
+            doc = self.crewer.get_doc_by_url(url)
+            self.assertEqual(doc.url, url)
+            self.assertEqual(doc.meta_data.author, 'seabox')
+            self.assertTrue(doc.meta_data.title.startswith('[公告] 八卦板板規'))
+            self.assertTrue('第一條' in doc.real_data.content)
+
+class TestCrewerBad(_TestCrewerBase):
+    def runTest(self):
+        urls = [
+            'https://sadfdsafdsafdsafdsafs',
+            'asdfasdfasdf',
+            'https://www.google.com.tw',
+            'https://www.ptt.cc/bbs/Gossiping/M.1455624927.X.XXX.html',
+            'https://www.ptt.cc/bbs/Gossiping/M.1455624927_X.XXX.html'
+        ]
+        for url in urls:
+            doc = self.crewer.get_doc_by_url(url)
+            self.assertEqual(doc.meta_data.title, '')

@@ -1,5 +1,6 @@
 import bs4
 import datetime
+import logging
 import re
 import requests
 import time
@@ -16,17 +17,20 @@ from modules.protocol.types import ReplyMode
 
 _REMOVE_TAG_REGULAR = re.compile(r'<.*?>')
 
+_TIME_INF = 2 ** 60
+
 
 class Crewer(CrewerInterface):
     def __init__(self, logger):
         self._logger = logger
+        logging.getLogger('urllib3').setLevel(logging.WARNING)
 
     def get_doc_by_url(self, url):
         meta_data = DocMetaData(
-                None, None, '', '', 999999999999, None, [0, 0, 0])
+                None, None, '', '', _TIME_INF, None, [0, 0, 0])
         real_data = DocRealData('', [])
         ok = False
-        for i in range(100):
+        for i in range(30):
             try:
                 request = requests.get(url, headers=HEADERS)
                 if request.status_code != 200:
@@ -91,8 +95,7 @@ class Crewer(CrewerInterface):
             user = a.find(attrs={'class': 'push-userid'}).string
             cc = a.find(attrs={'class': 'push-content'}).string
             if cc is not None:
-                c = cc[2 : ]
-                ret.append((case, user, c))
+                ret.append((case, user, cc[2 : ]))
         return ret
 
     @staticmethod

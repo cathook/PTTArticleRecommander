@@ -41,9 +41,6 @@ class TestDocMetaData(unittest.TestCase):
                         b'\x02\x00\x00\x00',
                         b'\x05\x00\x00\x00',
                         b'\x07\x00\x00\x00'])
-        print('')
-        print(dmd.dump())
-        print(buf)
         self.assertEqual(dmd.dump(), buf)
 
 

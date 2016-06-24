@@ -64,6 +64,7 @@ def main():
     finally:
         logger.info('Cleanup')
         server.stop()
+        backend.destroy()
     sys.exit(0)
 
 

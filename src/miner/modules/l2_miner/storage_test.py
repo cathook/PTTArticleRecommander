@@ -1,3 +1,4 @@
+import datetime
 import inspect
 import logging
 import os
@@ -30,46 +31,73 @@ class _FakeCrewer(storage.CrewerInterface):
         doc = common.ADocument()
         doc.url = url
         doc.meta_data = types.DocMetaData(
-                None, None, url, url, 0, url, [0, 0, 0])
+                None, None, url, url, int(url), url, [0, 0, 0])
         doc.real_data = types.DocRealData(url, [])
         return doc
 
-class TestCrewer(unittest.TestCase):
+
+class TestStorage(unittest.TestCase):
+    def setUp(self):
+        self.lg = logging.getLogger()
+        self.fc = _FakeCrewer()
+        self.tdir = tempfile.mkdtemp()
+        self.storage = None
+
+    def _initStorage(self):
+        self.storage = storage.Storage(self.lg, self.tdir, self.fc, int)
+
     def runTest(self):
-        lg = logging.getLogger()
-        fc = _FakeCrewer()
-        tdir = tempfile.mkdtemp()
-        s = storage.Storage(lg, tdir, fc)
+        self._initStorage()
 
-        self.assertEqual(s.max_id, -1)
-        self.assertEqual(s.newest_url, None)
-        self.assertEqual(s.get_id_by_url('sadfasdf'), -1)
-        self.assertEqual(s.get_url_by_id(123), '')
+        self.assertEqual(self.storage.max_id, -1)
+        self.assertEqual(self.storage.newest_doc, None)
+        self.assertEqual(self.storage.oldest_doc, None)
+        self.assertEqual(self.storage.updated, False)
+        self.assertEqual(self.storage.update_after_time(0), (-1, -1))
 
-        s.add_url( 9, 'url09')
-        s.add_url(10, 'url10')
-        self.assertEqual(s.get_doc_by_id(9).url, 'url09')
-        self.assertEqual(s.get_doc_by_id(9).real_data.content, 'url09')
+        self._test_add_doc(10, True)
+        self.assertEqual(self.storage.updated, True)
 
-        def func():
-            for idid in range(8, -1, -1):
-                s.add_url(idid, 'url%02d' % idid)
-                time.sleep(0.3)
-        thr = threading.Thread(target=func)
+        for i in range(5):
+            self.assertEqual(self.storage.get_doc_by_id(10).url, '10')
+        self.assertEqual(self.fc.counter, 1)
+
+        self._test_add_doc(10, False)
+        self._test_add_doc(7, True)
+
+        thr = threading.Thread(target=self._add_from, args=(30, 12))
         thr.start()
-        self.assertEqual(s.get_doc_by_id(6).url, 'url06')
-        self.assertEqual(s.get_doc_by_id(7).url, 'url07')
-        self.assertEqual(s.get_url_by_id(5), 'url05')
-        self.assertEqual(s.get_id_by_url('url01'), 1)
-        thr.join()
 
-        fc.counter = 0
-        s = storage.Storage(lg, tdir, fc)
-        self.assertEqual(s.max_id, 10)
-        self.assertEqual(s.get_doc_by_id(9).url, 'url09')
-        self.assertEqual(s.get_doc_by_id(9).real_data.content, 'url09')
-        self.assertEqual(s.get_doc_by_id(6).url, 'url06')
-        self.assertEqual(s.get_doc_by_id(7).url, 'url07')
-        self.assertEqual(s.get_url_by_id(5), 'url05')
-        self.assertEqual(s.get_id_by_url('url01'), 1)
-        self.assertEqual(fc.counter, 0)
+        self.assertEqual(self.storage.get_doc_by_id(23).url, '23')
+        self.assertEqual(self.storage.get_doc_by_id(21).url, '21')
+        self.assertEqual(self.storage.get_doc_by_id(27).url, '27')
+        self.assertEqual(self.storage.get_doc_by_id(27).url, '27')
+        t0 = datetime.datetime.now().timestamp()
+        self.assertEqual(self.storage.get_doc_by_id(10).url, '10')
+        self.assertTrue((datetime.datetime.now().timestamp() - t0) < 0.05)
+
+        thr.join()
+        self.assertEqual(self.fc.counter, 21)
+
+        self.fc.counter = 0
+        self._initStorage()
+
+        self.assertEqual(self.storage.max_id, 30)
+        self.assertEqual(self.storage.newest_doc.url, '30')
+        self.assertEqual(self.storage.oldest_doc.url, '12')
+        self.assertEqual(self.storage.updated, False)
+        self.assertEqual(self.fc.counter, 0)
+        self.assertEqual(self.storage.update_after_time(13), (13, 30))
+        self.assertEqual(self.fc.counter, 18)
+        self.assertEqual(self.storage.update_after_time(6), (7, 30))
+        self.assertEqual(self.fc.counter, 18 + 21)
+
+    def _test_add_doc(self, idid, should_add):
+        ct = self.fc.counter
+        self.assertEqual(self.storage.add_doc(idid, str(idid)), should_add)
+        self.assertEqual(self.fc.counter, ct + (1 if should_add else 0))
+
+    def _add_from(self, max_id, min_id):
+        for idid in range(max_id, min_id - 1, -1):
+            self.storage.add_doc(idid, str(idid))
+            time.sleep(0.1)
