@@ -3,16 +3,25 @@
 #include <string>
 
 #include "impl_/empty_analyst.h"
-
-#include "impl_/tf_idf_analyst_content.h"
-
-#include "impl_/tf_idf_analyst_title.h"
 #include "impl_/fake_analyst.h"
+#include "impl_/tf_idf_analyst_content.h"
+#include "impl_/tf_idf_analyst_title.h"
 
 using std::string;
 
 
 namespace analyst {
+
+
+Options::Options() : AOptionCollection("Options for the analyst.") {
+  AddOption<utils::TypedOption<std::string>>(
+      "impl_type", "tf_idf_title",
+      "Specify the analysis algorithm to use. Acceptable options are"
+      " tf_idf_title, tf_idf_content, empty and fake."
+      " (default=tf_idf_title)");
+
+  AddOption<impl_::FakeAnalystOptions>("fake_opts");
+}
 
 
 IAnalyst* CreateAnalyst(Options const& options,
@@ -23,13 +32,13 @@ IAnalyst* CreateAnalyst(Options const& options,
   if (impl_type == "empty") {
     return new impl_::EmptyAnalyst();
   }
-  else if (impl_type == "tf_idf_title") {
+  if (impl_type == "tf_idf_title") {
     return new impl_::TfIdfAnalystTitle(miner);
   }
-  else if (impl_type == "tf_idf_content") {
+  if (impl_type == "tf_idf_content") {
     return new impl_::TfIdfAnalystContent(miner);
   }
-  else if (impl_type == "fake") {
+  if (impl_type == "fake") {
     return new impl_::FakeAnalyst(
         miner, *options.GetOption<impl_::FakeAnalystOptions>("fake_opts"));
   }

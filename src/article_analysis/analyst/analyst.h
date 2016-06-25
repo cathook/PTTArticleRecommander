@@ -5,7 +5,6 @@
 #include <string>
 
 #include "analyst/i_analyst.h"
-#include "impl_/fake_analyst.h"
 #include "logging/logger.h"
 #include "miner/miner.h"
 #include "utils/options.h"
@@ -16,14 +15,7 @@ namespace analyst {
 
 class Options : public utils::AOptionCollection {
  public:
-  Options() : AOptionCollection("Options for the analyst.") {
-    AddOption<utils::TypedOption<std::string>>(
-        "impl_type", "tf_idf_title",
-		"Implement type, default=tf_idf_title. "
-		"Option: tf_idf_title, tf_idf_content");
-
-    AddOption<impl_::FakeAnalystOptions>("fake_opts");
-  }
+  Options();
 };
 
 
