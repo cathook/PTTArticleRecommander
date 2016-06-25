@@ -7,6 +7,7 @@ from modules.l2_miner.board_listener import BoardListener
 from modules.l2_miner.cache import Cache
 from modules.l2_miner.crewer import Crewer
 from modules.l2_miner.storage import Storage
+from modules.protocol.types import DocIdentity
 
 
 class RealBackend(BackendInterface):
@@ -54,7 +55,11 @@ class RealBackend(BackendInterface):
         return self._get_cache(board).get_doc_real_data(idid)
 
     def get_id_by_url(self, url):
-        return self._get_cache(board).get_id_by_url(url)
+        for board in self._workers:
+            if board in url:
+                idid = self._get_cache(board).get_id_by_url(url)
+                return DocIdentity(board, idid)
+        return DocIdentity('', -1)
 
     def get_url_by_id(self, board, idid):
         return self._get_cache(board).get_url_by_id(idid)
@@ -66,6 +71,7 @@ class RealBackend(BackendInterface):
                 b.stop()
                 b.join()
                 c.stop_auto_update()
+                s.notify_stop()
             self._workers = {}
 
     def _yield_board_meta(self, board, idid):

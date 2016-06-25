@@ -19,12 +19,16 @@ class Storage(StorageInterface):
         self._crewer = crewer
         self.url_num_getter = url_num_getter
         self._updated = False
+        self._stop_flag = False
 
         is_file = lambda f: os.path.isfile(os.path.join(data_dir, f))
         self._max_id = max(
                 [-1] + [int(f) for f in os.listdir(data_dir) if is_file(f)])
 
         self._lock = threading.Condition()
+
+    def notify_stop(self):
+        self._stop_flag = True
 
     @property
     def max_id(self):
@@ -89,7 +93,9 @@ class Storage(StorageInterface):
             while not os.path.isfile(fname):
                 self._logger.info(
                         'Document %r is currently unavailiable, wait.' % idid)
-                self._lock.wait()
+                self._lock.wait(1)
+                if self._stop_flag:
+                    return None
 
             with open(fname, 'rb') as f:
                 self._logger.info('Load doc %d from the storage.' % idid)
@@ -97,17 +103,18 @@ class Storage(StorageInterface):
 
     def get_doc_by_url(self, url):
         url_num = self.url_num_getter(url)
-        lower, upper = 0, self.max_id + 1
-        while lower < upper:
-            mid = (lower + upper) // 2
-            doc = self.get_doc_by_id(mid)
-            doc_url_num = self.url_num_getter(doc.url)
-            if doc_url_num < url_num:
-                lower = mid + 1
-            elif doc_url_num > url_num:
-                upper = mid
-            else:
+        for idid in range(self._max_id, -1, -1):
+            fname = self._get_filename_by_id(idid)
+            with self._lock:
+                if not os.path.isfile(fname):
+                    continue
+                with open(fname, 'rb') as f:
+                    doc = self._load_obj_from_file(f)
+            url_num2 = self.url_num_getter(doc.url)
+            if url_num == url_num2:
                 return doc
+            if url_num2 < url_num:
+                break
         return None
 
     def _update_doc(self, idid, url):
@@ -133,16 +140,17 @@ class Storage(StorageInterface):
         try:
             return pickle.dumps(obj)
         except RuntimeError as e:
-            self._handle_pickle_re(e)
+            self._handle_pickle_re()
+            raise
 
     def _load_obj_from_file(self, f):
         try:
             return pickle.load(f)
         except RuntimeError as e:
-            self._handle_pickle_re(e)
+            self._handle_pickle_re()
+            raise
 
-    def _handle_pickle_re(self, err):
+    def _handle_pickle_re(self):
         curr_lim = sys.getrecursionlimit()
         self._logger.error('RE, increase limit from %d' % curr_lim)
         sys.setrecursionlimit(int(curr_lim * 1.5))
-        raise err
