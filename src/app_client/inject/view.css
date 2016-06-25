@@ -4,22 +4,27 @@
 
 
 #pttr-show-list {
-  background-color: rgba(0, 0, 0, 1);
   bottom: 0;
-  color: #fff;
-  position: fixed;
-  right: 0;
-  z-index: 99;
+  cursor: pointer;
+  padding 0 10px;
+}
+
+#pttr-show-list:hover {
+  background-color: #eee;
 }
 
 
 #pttr-list {
-  position: fixed;
+  background-color: #000;
+  border-color: #eee;
+  border-style: double;
+  bottom: 10%;
   left: 10%;
+  overflow-x: auto;
+  padding: 0.5em;
+  position: fixed;
   right: 10%;
   top: 10%;
-  bottom: 10%;
-  background-color: rgba(100, 100, 100, 0.8);
   z-index: 99;
 }
 
@@ -28,4 +33,16 @@
 
 .pttr-list-hide {
   display: none;
+}
+
+
+#pttr-list > .title {
+  color: #eee;
+  margin: 10px 0;
+}
+
+
+#pttr-list > .list > a {
+  display: block;
+  margin-bottom: 10px;
 }

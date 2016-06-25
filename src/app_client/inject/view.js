@@ -34,11 +34,18 @@
             var element = dom.body.firstElementChild;
 
             var placeSelector = element.getAttribute('data-parent-selector');
-            if (placeSelector === null) {
+            if (placeSelector === null || placeSelector === '') {
               placeSelector = 'body';
             }
 
-            document.querySelector(placeSelector).appendChild(element);
+            p = document.querySelector(placeSelector);
+
+            nextSelector = element.getAttribute('data-next-node-selector');
+            if (nextSelector === null || nextSelector === '') {
+              p.appendChild(element);
+            } else {
+              p.insertBefore(element, p.querySelector(nextSelector));
+            }
           }
 
           this._posListElement = document.getElementById('pttr-positive-list');
