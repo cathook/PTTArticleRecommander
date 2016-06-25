@@ -36,7 +36,7 @@ IAnalyst* CreateAnalyst(Options const& options,
     return new impl_::TfIdfAnalystTitle(miner);
   }
   if (impl_type == "tf_idf_content") {
-    return new impl_::TfIdfAnalystContent(miner);
+    return new impl_::TfIdfAnalystContent(miner, parent_logger);
   }
   if (impl_type == "fake") {
     return new impl_::FakeAnalyst(
