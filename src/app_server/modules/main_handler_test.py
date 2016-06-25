@@ -43,9 +43,3 @@ class TestMainHandler(unittest.TestCase):
             self.assertEqual(len(b[key]), i + 1)
             for x in b[key]:
                 self.assertEqual(x['url'], 'aabbccdd1')
-        boo = False
-        try:
-            a.handle_json({'meow': 'wang wang'})
-        except main_handler.MainHandlerError as e:
-            boo = True
-        self.assertTrue(boo)
