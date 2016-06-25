@@ -1,4 +1,4 @@
-# PTT Article Recommander
+# PTT Article Recommender
 
 ## Purpose
 
@@ -110,7 +110,7 @@ The whole project consists of 4 main parts:
   It is a HTTP server handling the client side queries.
 * *app_client*
   It is a Google Chrome Extension, which will ask the app_server for the
-  recommand article.
+  recommend article.
 
 All the source codes are put in the directory `src`.
 

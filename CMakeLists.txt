@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 
-project (PTTArticleRecommander)
+project (PTTArticleRecommender)
 
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

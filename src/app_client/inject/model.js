@@ -1,7 +1,7 @@
 /**
  * The model part of the MVC structure.
  *
- * When the controller want the model to update the recommand document list by
+ * When the controller want the model to update the recommend document list by
  * current url, it will connect to the app server to fetch data, after finished,
  * it will emit `common.EVENTS.UPDATE` event.
  */
