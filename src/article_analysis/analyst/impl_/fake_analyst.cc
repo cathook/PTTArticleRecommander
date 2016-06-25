@@ -17,6 +17,12 @@ namespace analyst {
 namespace impl_ {
 
 
+FakeAnalystOptions::FakeAnalystOptions() :
+    AOptionCollection("A fake analyst, for testing only.") {
+  AddOption<utils::TypedOption<std::string>>("board_name", "Gossiping", "");
+}
+
+
 FakeAnalyst::FakeAnalyst(miner::Miner* miner, FakeAnalystOptions const& opt) {
   string board_name =
       opt.GetOption<utils::TypedOption<string>>("board_name")->value();

@@ -14,9 +14,7 @@ namespace impl_ {
 
 class FakeAnalystOptions : public utils::AOptionCollection {
  public:
-  FakeAnalystOptions() : utils::AOptionCollection("") {
-    AddOption<utils::TypedOption<std::string>>("board_name", "Gossiping", "");
-  }
+  FakeAnalystOptions();
 };
 
 
