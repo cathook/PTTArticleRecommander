@@ -28,7 +28,7 @@ FakeAnalyst::FakeAnalyst(miner::Miner* miner, FakeAnalystOptions const& opt) {
     fflush(stdout);
     static char buf[10];
     if (scanf("%2s", buf) != 1) {
-      exit(1);
+      break;
     }
     if (buf[0] == '?') {
       max_id = miner->GetMaxId(board_name);
@@ -37,7 +37,7 @@ FakeAnalyst::FakeAnalyst(miner::Miner* miner, FakeAnalystOptions const& opt) {
     }
     int k;
     if (scanf("%d", &k) != 1) {
-      exit(1);
+      break;
     }
     if (buf[0] == 'r') {
       auto r = miner->GetDocRealData(board_name, k);
@@ -72,6 +72,23 @@ FakeAnalyst::FakeAnalyst(miner::Miner* miner, FakeAnalystOptions const& opt) {
       continue;
     }
   }
+}
+
+
+DocRelInfo FakeAnalyst::GetDocRelInfo(DocIdentity const& idid) const {
+  DocIdentity id = idid;
+  DocRelInfo ret;
+
+  id.id -= 1; ret.pos_rel_docs.push_back(id);
+  id.id -= 1; ret.pos_rel_docs.push_back(id);
+  id.id -= 1; ret.pos_rel_docs.push_back(id);
+
+  id.id -= 1; ret.neg_rel_docs.push_back(id);
+  id.id -= 1; ret.neg_rel_docs.push_back(id);
+
+  id.id -= 1; ret.neutral_rel_docs.push_back(id);
+
+  return ret;
 }
 
 }  // namespace impl_

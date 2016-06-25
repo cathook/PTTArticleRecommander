@@ -24,9 +24,7 @@ class FakeAnalyst : public IAnalyst {
  public:
   FakeAnalyst(miner::Miner* miner, FakeAnalystOptions const& opt);
 
-  DocRelInfo GetDocRelInfo(DocIdentity const& id) const override final {
-    return DocRelInfo();
-  }
+  DocRelInfo GetDocRelInfo(DocIdentity const& id) const override final;
 };
 
 }  // namespace impl_
