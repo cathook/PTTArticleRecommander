@@ -11,6 +11,7 @@ import modules.article_analysis
 import modules.http_request_handler
 import modules.main_handler
 import modules.miner
+from modules.utils import get_exception_msg
 
 
 PREFIX_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../..')
