@@ -39,10 +39,14 @@
         if (request.readyState == 4 && request.status == 200) {
           var response = JSON.parse(request.responseText);
           ['positive', 'negative', 'neutral'].forEach((function(name) {
-            response[name].forEach((function(url) {
-              this._fetchDocument.call(
-                  this, idx, this[name + '_docs'], url);
-            }).bind(this));
+            if (response.hasOwnProperty(name)) {
+              response[name].forEach((function(obj) {
+                if (obj.hasOwnProperty('url')) {
+                  this._fetchDocument.call(
+                      this, idx, this[name + '_docs'], obj.url);
+                }
+              }).bind(this));
+            }
           }).bind(this));
         }
       }).bind(this);

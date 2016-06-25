@@ -1,5 +1,6 @@
 import logging
 import socket
+import time
 
 from modules.protocol import net
 from modules.protocol import types
@@ -25,10 +26,13 @@ class ProxyClient(object):
             port: Port of the server.
             logger: The logger.
         '''
-        self._sock = None
+        self._addr = addr
+        self._port = port
         self._logger = logger
 
-        self._init_sock(addr, port)
+        self._sock = None
+
+        self._init_sock()
 
     def send_pkg(self, typee, buf):
         '''Send a buf with specifying package type.
@@ -37,10 +41,20 @@ class ProxyClient(object):
             typee: The package type.
             buf: The package content.
         '''
-        try:
-            self._sock.sendall(net.PackageHeader(typee, len(buf)).dump() + buf)
-        except socket.error as e:
-            raise ProxyClientError('Cannot send message.')
+        for i in range(10):
+            try:
+                self._sock.sendall(
+                        net.PackageHeader(typee, len(buf)).dump() + buf)
+                return
+            except socket.error as e:
+                self._logger.warning('It seems that the server is dead.')
+                try:
+                    self._sock.close()
+                except Exception as _:
+                    pass
+                time.sleep(10)
+                self._init_sock()
+        raise ProxyClientError('Cannot send message.')
 
     def recv_header(self):
         '''Receives a package header.
@@ -69,10 +83,11 @@ class ProxyClient(object):
             buf += a
         return buf
 
-    def _init_sock(self, addr, port):
+    def _init_sock(self):
         try:
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._sock.connect((addr, port))
-            self._logger.info('Connected to the server (%s, %d)' % (addr, port))
+            self._sock.connect((self._addr, self._port))
+            self._logger.info('Connected to the server (%s, %d)'
+                              % (self._addr, self._port))
         except socket.error as e:
             raise ProxyClientError('Cannot connect to the miner server %r' % e)

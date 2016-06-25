@@ -35,7 +35,7 @@ class _ArticleAnalysisProxy(object):
                                                           self._logger)
         except proxy_client.ProxyClientError as e:
             self._logger.error('Cannot connect to the miner server.')
-            raise e
+            raise
 
     def get_doc_rel_info(self, identity):
         '''Gets a documnent's relationship information by its identity.
@@ -58,7 +58,7 @@ class _ArticleAnalysisProxy(object):
         buf = self._proxy_client.recv_all(ph.size)
         (out, offs) = unpack_func(buf)
         if offs != ph.size:
-            raise ArticleAnalysis('Wrong format.')
+            raise ArticleAnalysisError('Wrong format.')
         return out
 
 

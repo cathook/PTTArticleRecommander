@@ -11,7 +11,7 @@
 
 2. Create directory for storing the needed files:
    ```
-   $ mkdir -p share/app_server
+   $ mkdir -p share/app_server && cd share/app_server
    ```
 
 3. Creates the files:

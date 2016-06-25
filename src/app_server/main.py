@@ -78,8 +78,12 @@ def main():
         logger.info('Starts the server.')
 
         s.serve_forever()
+    except KeyboardInterrupt as e:
+        logger.info('Keyboard interrupt.')
+    except SystemExit as _:
+        logger.info('System exit.')
     except Exception as e:
-        print('Exception: %r' % e)
+        logger.error(get_exception_msg(e))
         sys.exit(1)
     finally:
         try:

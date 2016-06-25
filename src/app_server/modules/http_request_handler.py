@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler
 import json
 
 from modules import main_handler
+from modules.utils import get_exception_msg
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
@@ -29,22 +30,17 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             self._logger.warning('Bad url path or content-type.')
             self.send_response(400)
             return
-        length = int(self.headers['content-length'])
-        data = self.rfile.read(length).decode('utf-8')
         try:
+            length = int(self.headers['content-length'])
+            data = self.rfile.read(length).decode('utf-8')
             obj = json.loads(data)
-        except Exception as e:
-            self._logger.warning('Cannot load json request.')
-            self.send_response(400)
-            return
-        try:
             ret = self._real_handler.handle_json(obj)
-        except main_handler.MainHandlerError as e:
-            self._logger.warning('Cannot handle json request.')
+            data = json.dumps(ret).encode('utf-8')
+        except Exception as e:
+            self._logger.warning(get_exception_msg(e))
             self.send_response(400)
             return
-        data = json.dumps(ret)
         self.send_response(200)
         self.send_header('content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(data.encode('utf-8'))
+        self.wfile.write(data)

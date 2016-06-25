@@ -35,7 +35,7 @@ class _MinerProxy(object):
                                                           self._logger)
         except proxy_client.ProxyClientError as e:
             self._logger.error('Cannot connect to the miner server.')
-            raise e
+            raise
 
     def get_url_by_doc_identity(self, identity):
         '''Gets a documnent url by its identity.
@@ -112,8 +112,7 @@ class Miner(object):
                     identity.idid == c_identity.idid:
                 return c_url
         url = self._miner_proxy.get_url_by_doc_identity(identity)
-        self._cache.append((url,
-                            types.DocIdentity(identity.board, identity.idid)))
+        self._add_to_cache(url, identity)
         self._ensure_cached_size_acceptable()
         return url
 
@@ -128,11 +127,17 @@ class Miner(object):
             if url == c_url:
                 return types.DocIdentity(c_identity.board, c_identity.idid)
         identity = self._miner_proxy.get_doc_identity_by_url(url)
-        self._cache.append((url,
-                            types.DocIdentity(identity.board, identity.idid)))
+        self._add_to_cache(url, identity)
         self._ensure_cached_size_acceptable()
         return identity
 
+    def _add_to_cache(self, url, identity):
+        self._logger.info('Add %s:%d <=> %s to cache'
+                          % (identity.board, identity.idid, url))
+        self._cache.append(
+                (url, types.DocIdentity(identity.board, identity.idid)))
+
     def _ensure_cached_size_acceptable(self):
         if len(self._cache) > self._max_cached_size:
+            self._logger.info('Cache fulled, shrink.')
             del self._cache[ : int((self._max_cached_size + 1) / 2)]

@@ -1,3 +1,6 @@
+from modules.utils import get_exception_msg
+
+
 # Possible keys in the json object.
 class Token(object):
     URL = 'url'
@@ -38,25 +41,25 @@ class MainHandler(object):
             json_obj: A json object.
         Returns: The return json object.
         '''
-        try:
-            self._logger.info('Get query.')
-            url = json_obj[Token.URL]
-            doc_id = self._miner.get_doc_identity_by_url(url)
+        self._logger.info('Get query.')
+        url = json_obj[Token.URL]
+        doc_id = self._miner.get_doc_identity_by_url(url)
 
-            rel_doc_ids = self._analyst.get_doc_rel_info(doc_id)
+        if doc_id.idid < 0:
+            return {}
 
-            f = lambda x: {Token.URL: self._miner.get_url_by_doc_identity(x)}
-            ret = {
-                Token.POSITIVE: [f(a) for a in rel_doc_ids.pos_rel_docs],
-                Token.NEGATIVE: [f(a) for a in rel_doc_ids.neg_rel_docs],
-                Token.NEUTRAL: [f(a) for a in rel_doc_ids.neutral_rel_docs]
-            }
-            self._logger.info('Query handled.')
+        rel_doc_ids = self._analyst.get_doc_rel_info(doc_id)
 
-            return ret
-        except Exception as e:
-            self._logger.warn('Cannot handle query: %r' % e)
-            raise MainHandlerError('Cannot handle: %r' % e)
+        f = lambda x: {Token.URL: self._miner.get_url_by_doc_identity(x)}
+        filt = lambda arr: [a for a in arr if a]
+        ret = {
+            Token.POSITIVE: filt(f(a) for a in rel_doc_ids.pos_rel_docs),
+            Token.NEGATIVE: filt(f(a) for a in rel_doc_ids.neg_rel_docs),
+            Token.NEUTRAL: filt(f(a) for a in rel_doc_ids.neutral_rel_docs)
+        }
+        self._logger.info('Query handled.')
+
+        return ret
 
 
 class EchoMainHandler(object):
@@ -66,8 +69,8 @@ class EchoMainHandler(object):
 
     def handle_json(self, json_obj):
         ret = {
-            Token.POSITIVE: [json_obj[Token.URL]],
-            Token.NEGATIVE: [json_obj[Token.URL]],
-            Token.NEUTRAL: [json_obj[Token.URL]]
+            Token.POSITIVE: [json_obj],
+            Token.NEGATIVE: [json_obj],
+            Token.NEUTRAL: [json_obj]
         }
         return ret
