@@ -2,12 +2,12 @@
 
 ## Purpose
 
-TODO(?): Fill it.
+Efficiently recommend relevent articlest on web ptt.
 
 
 ## Features
 
-TODO(?): Fill it.
+Simply install our chrome extension and then you can click the button on the left-bottom to automatically do this job
 
 
 ## Build & Install
