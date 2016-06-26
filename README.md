@@ -2,12 +2,13 @@
 
 ## Purpose
 
-Efficiently recommend relevent articlest on web ptt.
+Efficiently recommend relevent articles on web ptt.
 
 
 ## Features
 
-Simply install our chrome extension and then you can click the button on the left-bottom to automatically do this job
+Simply install our chrome extension and then you can click the button on the left-bottom to automatically do this job.
+We will also provide articles that are in the positive/negative/neutral position to the article that you are interested in in the future.
 
 
 ## Build & Install
@@ -61,7 +62,7 @@ the `libopencc-dev` on the system.
    ```
    $ make test
    ```
-   If you want to get more detail test result, see the readme file in each
+   If you want to get more details of the test result, see the readme file in each
    sub-project's source directories for help.
    
    If you want to escape this step and do not want to compile the test program,
